@@ -11,12 +11,11 @@ public class Producer: IDisposable
     private const string BrokerResponseSuccessValue = "";
     
     private readonly HttpClient _httpClient;
-    private readonly Guid _producerId = Guid.NewGuid();
     private readonly string _brokerUrl;
     
     private uint _sequenceNumber = 0;
     private bool _isRegistered = false;
-
+    private Guid _producerId;
     public Producer(string brokerUrl)
     {
         _brokerUrl = brokerUrl;
@@ -58,6 +57,7 @@ public class Producer: IDisposable
                                     $"Reason: {brokerResponse.Reason}");
             }
             _isRegistered = true;
+            _producerId = brokerResponse.ProducerId ?? throw new Exception($"Broker response producer id is null");
         }
         catch (HttpRequestException ex)
         {
