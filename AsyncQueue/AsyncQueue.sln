@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broker", "Broker\Broker.csproj", "{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramConsumer", "TelegramConsumer\TelegramConsumer.csproj", "{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
