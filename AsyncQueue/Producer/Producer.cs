@@ -41,7 +41,7 @@ public class Producer: IDisposable
                 cancellationToken);
             if (!result.IsSuccessStatusCode)
             {
-                throw new Exception($"RegisterAsync failed with status code {result.StatusCode}");
+                throw new Exception($"RegisterAsync failed with http status code {result.StatusCode}");
             }
             var responseBody = await result.Content.ReadAsStringAsync(cancellationToken);
             var brokerResponse = JsonSerializer.Deserialize<BrokerResponse>(responseBody);
@@ -53,15 +53,16 @@ public class Producer: IDisposable
 
             if (brokerResponse.Status != BrokerResponseSuccessValue)
             {
-                throw new Exception($"Broker response failed with status code {brokerResponse.Status}\n" +
+                throw new Exception($"Broker response failed with status: {brokerResponse.Status}\n" +
                                     $"Reason: {brokerResponse.Reason}");
             }
+            _producerId = brokerResponse.ProducerId ?? throw new Exception("Broker response producer id is null");
             _isRegistered = true;
-            _producerId = brokerResponse.ProducerId ?? throw new Exception($"Broker response producer id is null");
         }
         catch (HttpRequestException ex)
         {
             Console.WriteLine(ex.Message);
+            //retry
         }
     }
 
