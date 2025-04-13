@@ -14,7 +14,7 @@ public class Producer: IDisposable
     private readonly Guid _producerId = Guid.NewGuid();
     private readonly string _brokerUrl;
     
-    private long _sequenceNumber = 0;
+    private uint _sequenceNumber = 0;
     private bool _isRegistered = false;
 
     public Producer(string brokerUrl)
@@ -65,18 +65,21 @@ public class Producer: IDisposable
         }
     }
 
-    public async Task SendAsync(object payload, CancellationToken cancellationToken = default)
+    public async Task SendAsync<TValue, TKey>(string topic, TKey? key, TValue payload,
+        CancellationToken cancellationToken = default)
     {
         if (!_isRegistered)
         {
             throw new InvalidOperationException($"Producer {_producerId} has not been registered");
         }
         Interlocked.Increment(ref _sequenceNumber);
-        var message = new Message
+        var message = new Message<TKey,TValue>
         {
+            Key = key,
             Payload = payload,
             ProducerId = _producerId,
-            Sequence = _sequenceNumber
+            Sequence = _sequenceNumber,
+            Topic = topic,
         };
         
         var messageJson = JsonSerializer.Serialize(message);
