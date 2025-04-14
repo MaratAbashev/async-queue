@@ -4,6 +4,7 @@ using ProducerClient.Models;
 var producerBuilder = new ProducerBuilder<Ignore, string>("");
 
 var producer = producerBuilder.Build();
+await producer.RegisterAsync();
 var i = 0;
 while (true)
 {

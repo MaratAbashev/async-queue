@@ -7,14 +7,16 @@ namespace ProducerClient;
 
 internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
 {
+    private const string RegisterEndpoint = "";
     private const string SendEndpoint = "";
     private const string BrokerResponseSuccessValue = "";
     
-    private readonly Guid _producerId = Guid.NewGuid();
     private readonly HttpClient _httpClient;
     
     private uint _sequenceNumber = 0;
-    
+    private bool _isRegistered = false;
+    private Guid _producerId;
+
     public string BrokerUrl { get; }
     
     public Producer(string brokerUrl)
@@ -22,10 +24,58 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         BrokerUrl = brokerUrl;
         _httpClient = new HttpClient {BaseAddress = new Uri(BrokerUrl)};
     }
-    
+
+    public async Task RegisterAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isRegistered)
+        {
+            throw new InvalidOperationException("Already registered");
+        }
+        var registerDto = new ProducerRegistration {ProducerId = _producerId};
+        var registerRequest = new StringContent(
+            JsonSerializer.Serialize(registerDto),
+            Encoding.UTF8,
+            "application/json");
+        try
+        {
+            var result = await _httpClient.PostAsync(
+                $"/{RegisterEndpoint}",
+                registerRequest,
+                cancellationToken);
+            if (!result.IsSuccessStatusCode)
+            {
+                throw new Exception($"RegisterAsync failed with http status code {result.StatusCode}");
+            }
+            var responseBody = await result.Content.ReadAsStringAsync(cancellationToken);
+            var brokerResponse = JsonSerializer.Deserialize<BrokerResponse>(responseBody);
+
+            if (brokerResponse == null)
+            {
+                throw new Exception("Broker response is null");
+            }
+
+            if (brokerResponse.Status != BrokerResponseSuccessValue)
+            {
+                throw new Exception($"Broker response failed with status: {brokerResponse.Status}\n" +
+                                    $"Reason: {brokerResponse.Reason}");
+            }
+            _producerId = brokerResponse.ProducerId ?? throw new Exception("Broker response producer id is null");
+            _isRegistered = true;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine(ex.Message);
+            //retry
+        }
+    }
+
     public async Task SendAsync(string topic, Message<TKey, TValue> message,
         CancellationToken cancellationToken = default)
     {
+        if (!_isRegistered)
+        {
+            throw new InvalidOperationException($"Producer {_producerId} has not been registered");
+        }
         Interlocked.Increment(ref _sequenceNumber);
         var messageRequest = new MessageRequest<TKey,TValue>
         {
