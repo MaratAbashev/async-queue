@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broker", "Broker\Broker.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerClient", "ProducerClient\ProducerClient.csproj", "{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleProducer", "ConsoleProducer\ConsoleProducer.csproj", "{58D429A4-6BD8-414D-A9A7-5F749A0B1AA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58D429A4-6BD8-414D-A9A7-5F749A0B1AA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58D429A4-6BD8-414D-A9A7-5F749A0B1AA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58D429A4-6BD8-414D-A9A7-5F749A0B1AA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58D429A4-6BD8-414D-A9A7-5F749A0B1AA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
