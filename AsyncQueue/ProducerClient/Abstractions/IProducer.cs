@@ -4,6 +4,6 @@ namespace ProducerClient.Abstractions;
 
 public interface IProducer<TKey, TValue>
 {
-    Task RegisterAsync(CancellationToken cancellationToken);
+    string BrokerUrl { get; }
     Task SendAsync(string topicName, Message<TKey, TValue> message, CancellationToken cancellationToken);
 }
