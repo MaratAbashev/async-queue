@@ -15,7 +15,7 @@ builder.Services.AddSingleton<ITelegramBotClient, TelegramBotClient>(_ =>
     }
     return new TelegramBotClient(token);
 });
-builder.Services.AddHttpClient<IConsumerService, ConsumerService>(client =>
+builder.Services.AddHttpClient<IConsumerService<string>, ConsumerService<string>>(client =>
 {
     var brokerUrl = builder.Configuration["MessageBroker"];
     if (string.IsNullOrEmpty(brokerUrl))
@@ -25,7 +25,7 @@ builder.Services.AddHttpClient<IConsumerService, ConsumerService>(client =>
     client.BaseAddress = new Uri(brokerUrl);
 });
 builder.Services.AddSingleton<ITelegramBotService, TelegramBotService>();
-builder.Services.AddSingleton<IConsumerService, ConsumerService>();
+builder.Services.AddSingleton<IConsumerService<string>, ConsumerService<string>>();
 
 
 var host = builder.Build();

@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broker", "Broker\Broker.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramConsumer", "TelegramConsumer\TelegramConsumer.csproj", "{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseConsumer", "DatabaseConsumer\DatabaseConsumer.csproj", "{7D741CD6-62BD-4350-B952-5909433F960F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D741CD6-62BD-4350-B952-5909433F960F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D741CD6-62BD-4350-B952-5909433F960F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D741CD6-62BD-4350-B952-5909433F960F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D741CD6-62BD-4350-B952-5909433F960F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

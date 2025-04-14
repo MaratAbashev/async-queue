@@ -1,6 +1,6 @@
-﻿using TelegramConsumer.Models;
+﻿using DatabaseConsumer.Models;
 
-namespace TelegramConsumer.Abstractions;
+namespace DatabaseConsumer.Abstractions;
 
 public interface IConsumerService<T>
 {

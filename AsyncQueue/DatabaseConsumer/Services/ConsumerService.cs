@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using TelegramConsumer.Abstractions;
-using TelegramConsumer.Models;
+using DatabaseConsumer.Abstractions;
+using DatabaseConsumer.Models;
 
-namespace TelegramConsumer.Services;
+namespace DatabaseConsumer.Services;
 
 public class ConsumerService<T>(HttpClient httpClient) : IConsumerService<T>
 {
