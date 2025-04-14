@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broker", "Broker\Broker.csproj", "{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Producer", "Producer\Producer.csproj", "{ACBEA3CB-44A0-42F2-90E8-8E556F452137}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerClient", "ProducerClient\ProducerClient.csproj", "{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}"
 EndProject
 Global
@@ -16,10 +14,6 @@ Global
 		{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C1ECEBA-8A4D-4AF3-9320-6ABA3574772D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ACBEA3CB-44A0-42F2-90E8-8E556F452137}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ACBEA3CB-44A0-42F2-90E8-8E556F452137}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ACBEA3CB-44A0-42F2-90E8-8E556F452137}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ACBEA3CB-44A0-42F2-90E8-8E556F452137}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}.Release|Any CPU.ActiveCfg = Release|Any CPU
