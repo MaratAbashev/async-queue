@@ -1,5 +1,8 @@
 using System.Text;
 using System.Text.Json;
+using Domain.Endpoints;
+using Domain.Models;
+using Domain.Models.ProducersDtos;
 using ProducerClient.Abstractions;
 using ProducerClient.Models;
 
@@ -7,15 +10,11 @@ namespace ProducerClient;
 
 internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
 {
-    private const string RegisterEndpoint = "";
-    private const string SendEndpoint = "";
-    private const string BrokerResponseSuccessValue = "";
-    
     private readonly HttpClient _httpClient;
+    private readonly Guid _producerId = Guid.NewGuid();
     
     private uint _sequenceNumber = 0;
     private bool _isRegistered = false;
-    private Guid _producerId;
 
     public string BrokerUrl { get; }
     
@@ -31,7 +30,7 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         {
             throw new InvalidOperationException("Already registered");
         }
-        var registerDto = new ProducerRegistration {ProducerId = _producerId};
+        var registerDto = new ProducerRegistrationRequest {ProducerId = _producerId};
         var registerRequest = new StringContent(
             JsonSerializer.Serialize(registerDto),
             Encoding.UTF8,
@@ -39,7 +38,7 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         try
         {
             var result = await _httpClient.PostAsync(
-                $"/{RegisterEndpoint}",
+                $"/{ProducerEndpoints.Register}",
                 registerRequest,
                 cancellationToken);
             if (!result.IsSuccessStatusCode)
@@ -47,19 +46,18 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
                 throw new Exception($"RegisterAsync failed with http status code {result.StatusCode}");
             }
             var responseBody = await result.Content.ReadAsStringAsync(cancellationToken);
-            var brokerResponse = JsonSerializer.Deserialize<BrokerResponse>(responseBody);
+            var brokerResponse = JsonSerializer.Deserialize<ProducerRegistrationResponse>(responseBody);
 
             if (brokerResponse == null)
             {
                 throw new Exception("Broker response is null");
             }
 
-            if (brokerResponse.Status != BrokerResponseSuccessValue)
+            if (brokerResponse.Status == ProcessingStatus.Wrong)
             {
                 throw new Exception($"Broker response failed with status: {brokerResponse.Status}\n" +
                                     $"Reason: {brokerResponse.Reason}");
             }
-            _producerId = brokerResponse.ProducerId ?? throw new Exception("Broker response producer id is null");
             _isRegistered = true;
         }
         catch (HttpRequestException ex)
@@ -77,9 +75,16 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
             throw new InvalidOperationException($"Producer {_producerId} has not been registered");
         }
         Interlocked.Increment(ref _sequenceNumber);
-        var messageRequest = new MessageRequest<TKey,TValue>
+        var producerMessage = new ProducerMessage
         {
-            Message = message,
+            KeyJson = JsonSerializer.Serialize(message.Key),
+            KeyType = typeof(TKey).AssemblyQualifiedName,
+            ValueJson = JsonSerializer.Serialize(message.Payload),
+            ValueType = typeof(TValue).AssemblyQualifiedName
+        };
+        var messageRequest = new ProducerSendRequest
+        {
+            Message = producerMessage,
             ProducerId = _producerId,
             Sequence = _sequenceNumber,
             Topic = topic,
@@ -91,14 +96,14 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         try
         {
             var result = await _httpClient.PostAsync(
-                $"/{SendEndpoint}",
+                $"/{ProducerEndpoints.Send}",
                 messageRequestContent,
                 cancellationToken);
             if (result.IsSuccessStatusCode)
             {
                 var responseBody = await result.Content.ReadAsStringAsync(cancellationToken);
-                var brokerResponse = JsonSerializer.Deserialize<BrokerResponse>(responseBody);
-                if (brokerResponse != null && brokerResponse.Status == BrokerResponseSuccessValue)
+                var brokerResponse = JsonSerializer.Deserialize<ProducerSendResponse>(responseBody);
+                if (brokerResponse != null && brokerResponse.Status == ProcessingStatus.Success)
                 {
                     return;
                 }
