@@ -1,8 +1,9 @@
 using DatabaseConsumer.Abstractions;
+using DatabaseConsumer.Services.Database;
 
 namespace DatabaseConsumer;
 
-public class Worker(IConsumerService<string> consumerService) : BackgroundService
+public class Worker(IConsumerService<string> consumerService, IDbConsumerRepository consumerRepository) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -16,7 +17,7 @@ public class Worker(IConsumerService<string> consumerService) : BackgroundServic
                 await Task.Delay(1000, stoppingToken);
                 continue;
             }
-            
+            await consumerRepository.AddMessageAsync(result.Value, stoppingToken);
             await consumerService.CommitOffset(result.PartitionId, result.Offset, stoppingToken);
         }
     }
