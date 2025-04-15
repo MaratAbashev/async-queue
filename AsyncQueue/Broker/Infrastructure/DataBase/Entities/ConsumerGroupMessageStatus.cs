@@ -1,4 +1,6 @@
-namespace Broker.Domain.Entities;
+using Broker.Domain.Models;
+
+namespace Broker.Infrastructure.DataBase.Entities;
 
 public class ConsumerGroupMessageStatus
 {

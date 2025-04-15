@@ -1,5 +1,5 @@
-using Broker.Domain.Entities;
 using Broker.Infrastructure.DataBase.Configurations;
+using Broker.Infrastructure.DataBase.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Broker.Infrastructure.DataBase;

@@ -12,10 +12,10 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
     private const string BrokerResponseSuccessValue = "";
     
     private readonly HttpClient _httpClient;
+    private readonly Guid _producerId = Guid.NewGuid();
     
     private uint _sequenceNumber = 0;
     private bool _isRegistered = false;
-    private Guid _producerId;
 
     public string BrokerUrl { get; }
     
@@ -59,7 +59,6 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
                 throw new Exception($"Broker response failed with status: {brokerResponse.Status}\n" +
                                     $"Reason: {brokerResponse.Reason}");
             }
-            _producerId = brokerResponse.ProducerId ?? throw new Exception("Broker response producer id is null");
             _isRegistered = true;
         }
         catch (HttpRequestException ex)

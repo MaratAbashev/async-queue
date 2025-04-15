@@ -1,4 +1,4 @@
-namespace Broker.Domain.Entities;
+namespace Broker.Domain.Models;
 
 public enum MessageStatus
 {

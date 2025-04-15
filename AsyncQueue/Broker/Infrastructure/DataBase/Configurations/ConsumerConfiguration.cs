@@ -1,4 +1,4 @@
-using Broker.Domain.Entities;
+using Broker.Infrastructure.DataBase.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

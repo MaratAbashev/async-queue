@@ -11,4 +11,9 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Application\Services\" />
+      <Folder Include="Domain\Models\ConsumersDtos\" />
+    </ItemGroup>
+
 </Project>

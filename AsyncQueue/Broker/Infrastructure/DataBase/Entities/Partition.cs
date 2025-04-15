@@ -1,4 +1,4 @@
-namespace Broker.Domain.Entities;
+namespace Broker.Infrastructure.DataBase.Entities;
 
 public class Partition
 {

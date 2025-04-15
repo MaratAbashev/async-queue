@@ -1,6 +1,6 @@
 ﻿using Broker.Controllers;
 
-namespace Broker.Interfaces;
+namespace Broker.Domain.Abstractions.Services;
 
 public interface IConsumerService
 {
