@@ -1,10 +1,14 @@
 using Domain.Entities;
 using Infrastructure.DataBase.Configurations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.DataBase;
 
-public class BrokerDbContext(DbContextOptions<BrokerDbContext> options): DbContext(options)
+public class BrokerDbContext(
+    DbContextOptions<BrokerDbContext> options, 
+    IConfiguration configuration): DbContext(options)
 {
     public DbSet<Consumer> Consumers { get; set; }
     public DbSet<ConsumerGroup> ConsumerGroups { get; set; }
@@ -26,5 +30,18 @@ public class BrokerDbContext(DbContextOptions<BrokerDbContext> options): DbConte
         modelBuilder.ApplyConfiguration(new TopicConfiguration());
         modelBuilder.ApplyConfiguration(new ProducerConfiguration());
         base.OnModelCreating(modelBuilder);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder
+            .UseNpgsql(configuration.GetConnectionString(nameof(BrokerDbContext)))
+            .UseLoggerFactory(CreateLoggerFactory())
+            .EnableSensitiveDataLogging();
+    }
+
+    private ILoggerFactory CreateLoggerFactory()
+    {
+        return LoggerFactory.Create(builder => builder.AddConsole());
     }
 }
