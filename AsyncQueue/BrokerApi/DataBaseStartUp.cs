@@ -9,21 +9,23 @@ public class DataBaseStartUp(BrokerDbContext context)
     {
         await context.Topics.AddAsync(new Topic
         {
-            Id = 0,
             TopicName = "topic1"
         });
+        await context.SaveChangesAsync();
+        var topicId = context.Topics.First().Id;
         await context.Partitions.AddAsync(new Partition
         {
-            TopicId = 0
+            TopicId = topicId,
         });
         await context.Partitions.AddAsync(new Partition
         {
-            TopicId = 0
+            TopicId = topicId,
         });
         await context.ConsumerGroups.AddAsync(new ConsumerGroup
         {
-            TopicId = 0,
+            TopicId = topicId,
             ConsumerGroupName = "group1"
         });
+        await context.SaveChangesAsync();
     }
 }

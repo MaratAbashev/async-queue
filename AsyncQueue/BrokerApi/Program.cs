@@ -14,9 +14,12 @@ builder.Services.AddScoped<IProducerService, ProducerService>();
 builder.Services.AddScoped<IProducerRepository, ProducerRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConsumerGroupRepository, ConsumerGroupRepository>();
+builder.Services.AddScoped<ITopicRepository, TopicRepository>();
 builder.Services.AddScoped<IConsumerGroupMessageStatusRepository, ConsumerGroupMessageStatusRepository>();
 
 var app = builder.Build();
+
+app.MapPost("/initialize", async (DataBaseStartUp startUp) => await startUp.Initialize());
 
 app.MapPost("/producer/register",
     async (ProducerRegistrationRequest request, IProducerService producerService) =>

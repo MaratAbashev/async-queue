@@ -9,6 +9,7 @@ namespace Application.Services;
 public class ProducerService(
     IProducerRepository producerRepository,
     IMessageRepository messageRepository,
+    ITopicRepository topicRepository,
     IConsumerGroupRepository consumerGroupRepository,
     IConsumerGroupMessageStatusRepository consumerGroupMessageStatusRepository): IProducerService
 {
@@ -49,7 +50,7 @@ public class ProducerService(
             };
         }
         var lastSequenceNumber = producer.CurrentSequenceNumber;
-        if (producer.CurrentSequenceNumber == lastSequenceNumber)
+        if (sendRequest.Sequence == lastSequenceNumber)
         {
             return new ProducerSendResponse
             {
@@ -58,7 +59,7 @@ public class ProducerService(
             };
         }
 
-        if (producer.CurrentSequenceNumber > lastSequenceNumber + 1)
+        if (sendRequest.Sequence > lastSequenceNumber + 1)
         {
             return new ProducerSendResponse()
             {
@@ -67,7 +68,7 @@ public class ProducerService(
             };
         }
 
-        if (producer.CurrentSequenceNumber < lastSequenceNumber)
+        if (sendRequest.Sequence < lastSequenceNumber)
         {
             return new ProducerSendResponse()
             {
@@ -76,7 +77,7 @@ public class ProducerService(
             };
         }
 
-        var groupMessagesByPartitionId = await messageRepository
+        var groupMessagesByPartitionId = await topicRepository
             .GroupMessagesInTopicByPartitionAsync(sendRequest.Topic);
 
         var message = sendRequest.Message;
@@ -121,7 +122,7 @@ public class ProducerService(
         {
             throw new ArgumentException("There are no partitions");
         }
-        var randomIndex = new Random().Next(0, keys.Count);
-        return (randomIndex, groupMessagesByPartitionId[randomIndex].Count());
+        var randomIndex = new Random().Next(0, keys.Count - 1);
+        return (keys[randomIndex], groupMessagesByPartitionId[keys[randomIndex]].Count());
     }
 }
