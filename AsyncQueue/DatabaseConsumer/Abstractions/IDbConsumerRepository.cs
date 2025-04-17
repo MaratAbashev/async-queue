@@ -1,4 +1,4 @@
-namespace DatabaseConsumer.Services.Database;
+namespace DatabaseConsumer.Abstractions;
 
 public interface IDbConsumerRepository
 {

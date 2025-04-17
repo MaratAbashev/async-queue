@@ -1,6 +1,7 @@
+using Domain.Entities;
+
 namespace Domain.Abstractions.Repositories;
 
-public interface IConsumerGroupRepository
+public interface IConsumerGroupRepository: IRepository<ConsumerGroup,int>
 {
-    
 }

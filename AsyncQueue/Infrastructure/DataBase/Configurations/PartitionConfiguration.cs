@@ -1,4 +1,4 @@
-using Infrastructure.DataBase.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,10 +9,10 @@ public class PartitionConfiguration: IEntityTypeConfiguration<Partition>
     public void Configure(EntityTypeBuilder<Partition> builder)
     {
         builder
-            .HasKey(p => p.PartitionId);
+            .HasKey(p => p.Id);
         
         builder
-            .Property(p => p.PartitionId)
+            .Property(p => p.Id)
             .ValueGeneratedOnAdd();
         
         builder

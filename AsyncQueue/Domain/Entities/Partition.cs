@@ -1,10 +1,13 @@
-namespace Infrastructure.DataBase.Entities;
+using Domain.Abstractions;
 
-public class Partition
+namespace Domain.Entities;
+
+public class Partition: IEntity<int>
 {
-    public int PartitionId { get; set; }
     public int TopicId { get; set; }
     public Topic Topic { get; set; }
     public List<ConsumerGroupOffset> ConsumerGroupOffsets { get; set; }
     public List<Message> Messages { get; set; }
+    public int Id { get; set; }
+    public bool IsDeleted { get; set; }
 }

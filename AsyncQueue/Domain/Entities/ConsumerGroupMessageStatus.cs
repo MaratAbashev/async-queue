@@ -1,13 +1,15 @@
+using Domain.Abstractions;
 using Domain.Models;
 
-namespace Infrastructure.DataBase.Entities;
+namespace Domain.Entities;
 
-public class ConsumerGroupMessageStatus
+public class ConsumerGroupMessageStatus: IEntity<long>
 {
-    public int ConsumerGroupMessageStatusId { get; set; }
     public Guid MessageId { get; set; }
     public int ConsumerGroupId { get; set; }
     public MessageStatus Status { get; set; }
     public Message Message { get; set; }
     public ConsumerGroup ConsumerGroup { get; set; }
+    public long Id { get; set; }
+    public bool IsDeleted { get; set; }
 }

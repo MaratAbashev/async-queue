@@ -1,4 +1,4 @@
-using Infrastructure.DataBase.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +9,7 @@ public class ConsumerConfiguration: IEntityTypeConfiguration<Consumer>
     public void Configure(EntityTypeBuilder<Consumer> builder)
     {
         builder
-            .HasKey(c => c.ConsumerId);
+            .HasKey(c => c.Id);
 
         builder
             .HasOne(c => c.ConsumerGroup)
