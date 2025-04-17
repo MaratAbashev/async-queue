@@ -81,7 +81,7 @@ public class ProducerService(
 
         var message = sendRequest.Message;
         var messageId = Guid.NewGuid();
-        var partition = GetPartitionByMessage(message);
+        var partition = GetPartitionByMessage(message, groupMessagesByPartitionId);
 
         await messageRepository.AddAsync(new Message
         {
@@ -112,8 +112,16 @@ public class ProducerService(
         };
     }
 
-    private (int partitionId, int partitionNumber) GetPartitionByMessage(ProducerMessage produceMessage)
+    private (int partitionId, int partitionNumber) GetPartitionByMessage(
+        ProducerMessage produceMessage,
+        Dictionary<int, IEnumerable<Message>> groupMessagesByPartitionId)
     {
-        return (0, 0);
+        var keys = groupMessagesByPartitionId.Keys.ToList();
+        if (keys.Count == 0)
+        {
+            throw new ArgumentException("There are no partitions");
+        }
+        var randomIndex = new Random().Next(0, keys.Count);
+        return (randomIndex, groupMessagesByPartitionId[randomIndex].Count());
     }
 }
