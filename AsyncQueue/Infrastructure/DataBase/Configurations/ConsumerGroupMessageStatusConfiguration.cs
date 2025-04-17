@@ -1,4 +1,5 @@
-using Infrastructure.DataBase.Entities;
+using Domain.Entities;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,11 +10,15 @@ public class ConsumerGroupMessageStatusConfiguration: IEntityTypeConfiguration<C
     public void Configure(EntityTypeBuilder<ConsumerGroupMessageStatus> builder)
     {
         builder
-            .HasKey(cgms => cgms.ConsumerGroupMessageStatusId);
+            .HasKey(cgms => cgms.Id);
         
         builder
-            .Property(cgms => cgms.ConsumerGroupMessageStatusId)
+            .Property(cgms => cgms.Id)
             .ValueGeneratedOnAdd();
+        
+        builder
+            .Property(cgms => cgms.Status)
+            .HasDefaultValue(MessageStatus.Pending);
         
         builder
             .HasOne(cgms => cgms.Message)

@@ -1,4 +1,5 @@
-﻿using DatabaseConsumer.Models.Entities;
+﻿using DatabaseConsumer.Abstractions;
+using DatabaseConsumer.Models.Entities;
 
 namespace DatabaseConsumer.Services.Database;
 

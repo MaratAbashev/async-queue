@@ -1,4 +1,4 @@
-using Infrastructure.DataBase.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +9,7 @@ public class MessageConfiguration: IEntityTypeConfiguration<Message>
     public void Configure(EntityTypeBuilder<Message> builder)
     {
         builder
-            .HasKey(m => m.MessageId);
+            .HasKey(m => m.Id);
         
         builder
             .HasOne(m => m.Partition)

@@ -1,4 +1,4 @@
-using Infrastructure.DataBase.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,10 +9,10 @@ public class ConsumerGroupOffsetConfiguration: IEntityTypeConfiguration<Consumer
     public void Configure(EntityTypeBuilder<ConsumerGroupOffset> builder)
     {
         builder
-            .HasKey(cgo => cgo.ConsumerGroupOffsetId);
+            .HasKey(cgo => cgo.Id);
         
         builder
-            .Property(cgo => cgo.ConsumerGroupOffsetId)
+            .Property(cgo => cgo.Id)
             .ValueGeneratedOnAdd();
         
         builder

@@ -1,4 +1,4 @@
-using Infrastructure.DataBase.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,10 +9,10 @@ public class ConsumerGroupConfiguration: IEntityTypeConfiguration<ConsumerGroup>
     public void Configure(EntityTypeBuilder<ConsumerGroup> builder)
     {
         builder
-            .HasKey(cg => cg.ConsumerGroupId);
+            .HasKey(cg => cg.Id);
 
         builder
-            .Property(cg => cg.ConsumerGroupId)
+            .Property(cg => cg.Id)
             .ValueGeneratedOnAdd();
 
         builder

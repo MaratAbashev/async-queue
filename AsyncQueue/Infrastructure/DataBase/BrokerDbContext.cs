@@ -1,5 +1,5 @@
+using Domain.Entities;
 using Infrastructure.DataBase.Configurations;
-using Infrastructure.DataBase.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.DataBase;
@@ -13,6 +13,7 @@ public class BrokerDbContext(DbContextOptions<BrokerDbContext> options): DbConte
     public DbSet<Message> Messages { get; set; }
     public DbSet<Partition> Partitions { get; set; }
     public DbSet<Topic> Topics { get; set; }
+    public DbSet<Producer> Producers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,6 +24,7 @@ public class BrokerDbContext(DbContextOptions<BrokerDbContext> options): DbConte
         modelBuilder.ApplyConfiguration(new MessageConfiguration());
         modelBuilder.ApplyConfiguration(new PartitionConfiguration());
         modelBuilder.ApplyConfiguration(new TopicConfiguration());
+        modelBuilder.ApplyConfiguration(new ProducerConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }
