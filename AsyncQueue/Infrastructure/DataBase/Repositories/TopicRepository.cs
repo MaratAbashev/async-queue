@@ -13,6 +13,7 @@ public class TopicRepository(BrokerDbContext context):
         return await _dbSet
             .Include(t => t.Partitions)
             .ThenInclude(p => p.Messages)
+            .Where(t => t.TopicName == topic)
             .SelectMany(t => t.Partitions)
             .GroupBy(p => p.Id)
             .ToDictionaryAsync(

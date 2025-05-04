@@ -76,7 +76,10 @@ public class ProducerService(
                 Reason = "Sent previous message"
             };
         }
-
+        
+        producer.CurrentSequenceNumber = (int)sendRequest.Sequence;
+        await producerRepository.UpdateAsync(producer);
+        
         var groupMessagesByPartitionId = await topicRepository
             .GroupMessagesInTopicByPartitionAsync(sendRequest.Topic);
 
