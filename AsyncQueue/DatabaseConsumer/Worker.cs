@@ -1,24 +1,37 @@
+using ConsumerClient.Abstractions;
 using DatabaseConsumer.Abstractions;
 using DatabaseConsumer.Services.Database;
 
 namespace DatabaseConsumer;
 
-public class Worker(IConsumerService<string> consumerService, IDbConsumerRepository consumerRepository) : BackgroundService
+public class Worker(IDbConsumerRepository consumerRepository, IConsumerClient<string> consumerClient) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await consumerService.RegisterAsync("tgBotGroup", stoppingToken);
+        await consumerClient.Register(stoppingToken);
         
         while (!stoppingToken.IsCancellationRequested)
         {
-            var result = await consumerService.PollAsync(stoppingToken);
-            if (result == null)
+            try
             {
-                await Task.Delay(1000, stoppingToken);
-                continue;
+                var result = await consumerClient.Poll(stoppingToken);
+                if (result == null)
+                {
+                    await Task.Delay(1000, stoppingToken);
+                    continue;
+                }
+
+                await consumerRepository.AddMessageAsync(result.Payload!, stoppingToken);
+                await consumerClient.CommitOffset(result.PartitionId, result.Offset, stoppingToken);
             }
-            await consumerRepository.AddMessageAsync(result.Value, stoppingToken);
-            await consumerService.CommitOffset(result.PartitionId, result.Offset, stoppingToken);
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }

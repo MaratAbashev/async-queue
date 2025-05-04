@@ -1,3 +1,5 @@
+using ConsumerClient;
+using ConsumerClient.Abstractions;
 using Telegram.Bot;
 using TelegramConsumer;
 using TelegramConsumer.Abstractions;
@@ -15,17 +17,22 @@ builder.Services.AddSingleton<ITelegramBotClient, TelegramBotClient>(_ =>
     }
     return new TelegramBotClient(token);
 });
-builder.Services.AddHttpClient<IConsumerService<string>, ConsumerService<string>>(client =>
+builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_ =>
 {
-    var brokerUrl = builder.Configuration["MessageBroker"];
+    var brokerUrl = builder.Configuration["MessageBroker:Host"];
+    var consumerGroup = builder.Configuration["MessageBroker:ConsumerGroup"];
     if (string.IsNullOrEmpty(brokerUrl))
     {
         throw new NullReferenceException("Please provide a broker url");
     }
-    client.BaseAddress = new Uri(brokerUrl);
+
+    if (string.IsNullOrEmpty(consumerGroup))
+    {
+        throw new NullReferenceException("Please provide a consumer group");
+    }
+    return new ConsumerClient<string>(consumerGroup, brokerUrl);
 });
 builder.Services.AddSingleton<ITelegramBotService, TelegramBotService>();
-builder.Services.AddSingleton<IConsumerService<string>, ConsumerService<string>>();
 
 
 var host = builder.Build();

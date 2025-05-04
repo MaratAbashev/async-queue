@@ -1,10 +1,12 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using ConsumerClient.Abstractions;
+using Domain.Endpoints;
 using Domain.Models.ConsumersDtos;
 
 namespace ConsumerClient;
 
-public class ConsumerClient<T>: IDisposable
+public class ConsumerClient<T>: IConsumerClient<T>
 {
     private Guid _consumerId;
     private bool _isRegistered;
@@ -28,7 +30,7 @@ public class ConsumerClient<T>: IDisposable
         {
             try
             {
-                var result = await _client.PostAsJsonAsync("/consumer/register",
+                var result = await _client.PostAsJsonAsync($"/{ConsumerEndpoints.Register}",
                     registerRequest, cancellationToken); //check timeouts/heartbeat
                 var content = await result.EnsureSuccessStatusCode().Content
                     .ReadFromJsonAsync<ConsumerRegisterResponse>(cancellationToken: cancellationToken);
@@ -52,7 +54,7 @@ public class ConsumerClient<T>: IDisposable
         {
             try
             {
-                var result = await _client.GetAsync($"/consumer/{_consumerId}/poll", cancellationToken);
+                var result = await _client.GetAsync($"/{_consumerId}/{ConsumerEndpoints.Poll}", cancellationToken);
                 if (result.StatusCode == System.Net.HttpStatusCode.NoContent)
                     return null;
                 var consumerMessage = await result.EnsureSuccessStatusCode().Content
@@ -88,7 +90,7 @@ public class ConsumerClient<T>: IDisposable
         {
             try
             {
-                var result = await _client.PostAsJsonAsync($"/consumer/{_consumerId}/commit", commitRequest, cancellationToken);
+                var result = await _client.PostAsJsonAsync($"/{_consumerId}/{ConsumerEndpoints.CommitOffset}", commitRequest, cancellationToken);
                 result.EnsureSuccessStatusCode();
                 return;
             }

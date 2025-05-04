@@ -1,23 +1,36 @@
+using ConsumerClient.Abstractions;
 using TelegramConsumer.Abstractions;
 
 namespace TelegramConsumer;
 
-public class Worker(ITelegramBotService telegramBotService, IConsumerService<string> consumerService) : BackgroundService
+public class Worker(ITelegramBotService telegramBotService, IConsumerClient<string> consumerClient) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await consumerService.RegisterAsync("tgBotGroup", stoppingToken);
+        await consumerClient.Register(stoppingToken);
         
         while (!stoppingToken.IsCancellationRequested)
         {
-            var result = await consumerService.PollAsync(stoppingToken);
-            if (result == null)
+            try
             {
-                await Task.Delay(1000, stoppingToken);
-                continue;
+                var result = await consumerClient.Poll(stoppingToken);
+                if (result == null)
+                {
+                    await Task.Delay(1000, stoppingToken);
+                    continue;
+                }
+
+                await telegramBotService.SendMessageAsync(result.Payload!, stoppingToken);
+                await consumerClient.CommitOffset(result.PartitionId, result.Offset, stoppingToken);
             }
-            await telegramBotService.SendMessageAsync(result.Value, stoppingToken);
-            await consumerService.CommitOffset(result.PartitionId, result.Offset, stoppingToken);
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }
