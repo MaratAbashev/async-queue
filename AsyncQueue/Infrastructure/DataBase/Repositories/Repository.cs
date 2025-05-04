@@ -20,12 +20,6 @@ public abstract class Repository<TEntity, TId>:
     }
     public virtual async Task<TEntity> AddAsync(TEntity entity)
     {
-        var existingEntity = await _dbSet
-            .FirstOrDefaultAsync(e => e.Id.Equals(entity.Id));
-        if (existingEntity != null)
-        {
-            throw new ArgumentException($"Entity with {existingEntity.Id} already exists");
-        }
         await _dbSet.AddAsync(entity);
         await _context.SaveChangesAsync();
         return entity;
@@ -33,12 +27,6 @@ public abstract class Repository<TEntity, TId>:
 
     public virtual async Task<TEntity> UpdateAsync(TEntity entity)
     {
-        var existingEntity = await _dbSet
-            .FirstOrDefaultAsync(e => e.Id.Equals(entity.Id));
-        if (existingEntity == null)
-        {
-            throw new ArgumentException("Entity not found");
-        }
         _dbSet.Update(entity);
         await _context.SaveChangesAsync();
         return entity;

@@ -1,7 +1,7 @@
 ﻿using ProducerClient;
 using ProducerClient.Models;
 
-var producerBuilder = new ProducerBuilder<Ignore, string>("");
+var producerBuilder = new ProducerBuilder<Ignore, string>("http://localhost:5284");
 
 var producer = producerBuilder.Build();
 await producer.RegisterAsync();
@@ -12,5 +12,6 @@ while (true)
     {
         Payload = i++.ToString()
     };
-    await producer.SendAsync("topic", message);
+    await producer.SendAsync("topic1", message);
+    await Task.Delay(1000);
 }
