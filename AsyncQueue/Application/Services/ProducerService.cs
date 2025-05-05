@@ -85,17 +85,15 @@ public class ProducerService(
 
         var message = sendRequest.Message;
         var messageId = Guid.NewGuid();
-        var partition = GetPartitionByMessage(message, groupMessagesByPartitionId);
+        var partition = GetPartitionByMessage(message.Key, groupMessagesByPartitionId);
 
         await messageRepository.AddAsync(new Message
         {
             Id = messageId,
             PartitionId = partition.partitionId,
             PartitionNumber = partition.partitionNumber,
-            KeyJson = message.KeyJson,
-            KeyType = message.KeyType,
+            KeyJson = message.Key,
             ValueJson = message.ValueJson,
-            ValueType = message.ValueType,
         });
 
         var consumerGroups = await consumerGroupRepository
@@ -117,15 +115,23 @@ public class ProducerService(
     }
 
     private (int partitionId, int partitionNumber) GetPartitionByMessage(
-        ProducerMessage produceMessage,
+        string? key,
         Dictionary<int, IEnumerable<Message>> groupMessagesByPartitionId)
     {
-        var keys = groupMessagesByPartitionId.Keys.ToList();
-        if (keys.Count == 0)
+        int partitionId;
+        if (key is not null)
         {
-            throw new ArgumentException("There are no partitions");
+            partitionId = groupMessagesByPartitionId.Keys
+                .ElementAt(Math.Abs(key.GetHashCode()) % groupMessagesByPartitionId.Count);
         }
-        var randomIndex = new Random().Next(0, keys.Count - 1);
-        return (keys[randomIndex], groupMessagesByPartitionId[keys[randomIndex]].Count());
+        else
+        {
+            partitionId = groupMessagesByPartitionId.Values
+                .Select(messages => messages.Count())
+                .Min();
+        }
+        var partitionNumber = groupMessagesByPartitionId[partitionId].Count();
+        
+        return (partitionId, partitionNumber);
     }
 }

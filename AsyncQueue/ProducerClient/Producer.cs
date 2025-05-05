@@ -77,10 +77,8 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         Interlocked.Increment(ref _sequenceNumber);
         var producerMessage = new ProducerMessage
         {
-            KeyJson = JsonSerializer.Serialize(message.Key),
-            KeyType = typeof(TKey).AssemblyQualifiedName,
+            Key = JsonSerializer.Serialize(message.Key),
             ValueJson = JsonSerializer.Serialize(message.Payload),
-            ValueType = typeof(TValue).AssemblyQualifiedName
         };
         var messageRequest = new ProducerSendRequest
         {
