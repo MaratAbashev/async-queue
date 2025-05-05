@@ -1,8 +1,9 @@
 ﻿namespace Domain.Models.ConsumersDtos;
 
-public class ConsumerRegisterResponse
+public class ConsumerPollResponse
 {
-    public Guid ConsumerId { get; set; }
     public ProcessingStatus ProcessingStatus { get; set; }
     public string? Message { get; set; }
+    public string? ValueType { get; set; }
+    public List<ConsumerMessage>? ConsumerMessages { get; set; }
 }

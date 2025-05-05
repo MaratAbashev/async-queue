@@ -1,7 +1,9 @@
 ﻿using System.Net.Http.Json;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using ConsumerClient.Abstractions;
 using Domain.Endpoints;
+using Domain.Models;
 using Domain.Models.ConsumersDtos;
 
 namespace ConsumerClient;
@@ -36,6 +38,8 @@ public class ConsumerClient<T>: IConsumerClient<T>
                     .ReadFromJsonAsync<ConsumerRegisterResponse>(cancellationToken: cancellationToken);
                 if (content == null)
                     throw new NullReferenceException("No consumer id in register response");
+                if (content.ProcessingStatus == ProcessingStatus.Wrong)
+                    throw new InvalidOperationException(content.Message);
                 _isRegistered = true;
                 _consumerId = content.ConsumerId;
                 return;
@@ -43,11 +47,12 @@ public class ConsumerClient<T>: IConsumerClient<T>
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Console.WriteLine(ex.Message);
+                await Task.Delay(5000, cancellationToken).WaitAsync(cancellationToken);
             }
         }
     }
 
-    public async Task<ConsumerPollResult<T>?> Poll(CancellationToken cancellationToken = default)
+    public async Task<List<ConsumerPollResult<T>>?> Poll(CancellationToken cancellationToken = default)
     {
         EnsureRegistered();
         while (!cancellationToken.IsCancellationRequested)
@@ -57,22 +62,30 @@ public class ConsumerClient<T>: IConsumerClient<T>
                 var result = await _client.GetAsync($"/{_consumerId}/{ConsumerEndpoints.Poll}", cancellationToken);
                 if (result.StatusCode == System.Net.HttpStatusCode.NoContent)
                     return null;
-                var consumerMessage = await result.EnsureSuccessStatusCode().Content
-                    .ReadFromJsonAsync<ConsumerMessage>(cancellationToken: cancellationToken);
-                if (consumerMessage == null)
-                    throw new NullReferenceException("Consumer message is null");
-                if (typeof(T).Name != consumerMessage.ValueType) // or check type fullname
-                    throw new FormatException("Consumer message is not of type " + consumerMessage.ValueType);
-                return new ConsumerPollResult<T>
-                {
-                    PartitionId = consumerMessage.PartitionId,
-                    Offset = consumerMessage.Offset,
-                    Payload = JsonSerializer.Deserialize<T>(consumerMessage.ValueJson)
-                };
+                
+                var consumerPollResponse = await result.EnsureSuccessStatusCode().Content
+                    .ReadFromJsonAsync<ConsumerPollResponse>(cancellationToken: cancellationToken);
+                if (consumerPollResponse == null)
+                    throw new NullReferenceException("Consumer response is null");
+                if (consumerPollResponse.ProcessingStatus == ProcessingStatus.Wrong)
+                    throw new InvalidOperationException(consumerPollResponse.Message);
+                if (consumerPollResponse.ConsumerMessages == null || consumerPollResponse.ConsumerMessages.Count == 0)
+                    throw new ArgumentException("Consumer response is empty");
+                if (typeof(T).Name != consumerPollResponse.ValueType) // or check type fullname
+                    throw new InvalidDataContractException("Consumer message is not of type " + consumerPollResponse.ValueType);
+                return consumerPollResponse.ConsumerMessages
+                    .Select(m => new ConsumerPollResult<T>
+                    {
+                        PartitionId = m.PartitionId,
+                        Offset = m.Offset,
+                        Payload = JsonSerializer.Deserialize<T>(m.ValueJson)
+                    }) // Order by offset if required
+                    .ToList();
             }
             catch (Exception ex) when(ex is not OperationCanceledException)
             {
                 Console.WriteLine(ex.Message);
+                await Task.Delay(5000, cancellationToken).WaitAsync(cancellationToken);
             }
         }
         return null;
@@ -97,6 +110,7 @@ public class ConsumerClient<T>: IConsumerClient<T>
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Console.WriteLine(ex.Message);
+                await Task.Delay(5000, cancellationToken).WaitAsync(cancellationToken);
             }
         }
     }

@@ -6,3 +6,4 @@ public class ConsumerPollResult<T>
     public long Offset { get; set; }
     public T? Payload { get; set; }
 }
+
