@@ -45,4 +45,11 @@ consumerEndpointGroup.MapGet("/{consumerId}/poll", async (Guid consumerId, ICons
         Results.NoContent() : Results.Ok(result);
 });
 
+consumerEndpointGroup.MapPost("/{consumerId}/poll", async (Guid consumerId, ConsumerCommitRequest request, IConsumerService consumerService) =>
+{
+    return await consumerService.TryCommitMessages(consumerId, request)?
+            Results.Ok():
+            Results.Conflict(); // поработать со статус кодами
+});
+
 app.Run();

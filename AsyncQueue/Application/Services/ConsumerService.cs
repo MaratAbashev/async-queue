@@ -73,20 +73,40 @@ public class ConsumerService(IConsumerRepository consumerRepository,
             };
         }
     }
+
+    public async Task<bool> TryCommitMessages(Guid consumerId, ConsumerCommitRequest consumerCommitRequest)
+    {
+        try
+        {
+
+            var consumer = await consumerRepository.GetByFilterAsync(c => c.Id == consumerId);
+            if (consumer == null)
+                throw new KeyNotFoundException($"Consumer with id {consumerId} not found");
+            var consumerGroupId = consumer.ConsumerGroupId;
+            var processingStatuses = await consumerGroupMessageStatusRepository
+                .GetAllByStatusAndConsumerGroupIdAsync(consumerGroupId, MessageStatus.Processing);
+            var messagesToCommit = processingStatuses
+                .Where(cgms => cgms.Message.PartitionId == consumerCommitRequest.PartitionId);
+            await consumerGroupMessageStatusRepository
+                .UpdateConsumerGroupMessageStatusAsync(messagesToCommit, MessageStatus.Processing);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return false;
+        }
+    }
     
     private async Task<List<ConsumerMessage>> GetPendingMessagesByConsumerIdAsync(Guid consumerId)
     {
         var consumer = await consumerRepository.GetByFilterAsync(c => c.Id == consumerId);
         if (consumer == null)
             throw new KeyNotFoundException($"Consumer with id {consumerId} not found");
-
         var consumerGroupId = consumer.ConsumerGroupId;
-
         var offsets = await consumerGroupOffsetRepository.GetByConsumerGroupIdAsync(consumerGroupId);
-
         var pendingStatuses = await consumerGroupMessageStatusRepository
-            .GetAllPendingByConsumerGroupIdAsync(consumerGroupId);
-
+            .GetAllByStatusAndConsumerGroupIdAsync(consumerGroupId, MessageStatus.Pending);
         var messages = pendingStatuses.Select(status => new ConsumerMessage
         {
             PartitionId = status.Message.PartitionId,
@@ -96,7 +116,6 @@ public class ConsumerService(IConsumerRepository consumerRepository,
                 ? offset
                 : throw new InvalidOperationException("Offset not found for partition")
         }).ToList();
-        
         await consumerGroupMessageStatusRepository
             .UpdateConsumerGroupMessageStatusAsync(pendingStatuses,
                 MessageStatus.Processing);

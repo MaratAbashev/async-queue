@@ -9,11 +9,12 @@ public class ConsumerGroupMessageStatusRepository(BrokerDbContext context) :
     Repository<ConsumerGroupMessageStatus, long>(context),
     IConsumerGroupMessageStatusRepository
 {
-    public async Task<List<ConsumerGroupMessageStatus>> GetAllPendingByConsumerGroupIdAsync(int consumerGroupId)
+    public async Task<List<ConsumerGroupMessageStatus>> GetAllByStatusAndConsumerGroupIdAsync(int consumerGroupId,
+        MessageStatus status)
     {
         return await _dbSet
             .Where(cgms => cgms.ConsumerGroupId == consumerGroupId
-            && cgms.Status == MessageStatus.Pending)
+            && cgms.Status == status)
             .Include(cgms => cgms.Message)
             .ToListAsync();
     }
