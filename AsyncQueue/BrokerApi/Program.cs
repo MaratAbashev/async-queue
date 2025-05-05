@@ -13,11 +13,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<BrokerDbContext>();
 builder.Services.AddScoped<DataBaseStartUp>();
 builder.Services.AddScoped<IProducerService, ProducerService>();
+builder.Services.AddScoped<IConsumerService, ConsumerService>();
 builder.Services.AddScoped<IProducerRepository, ProducerRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConsumerGroupRepository, ConsumerGroupRepository>();
 builder.Services.AddScoped<ITopicRepository, TopicRepository>();
 builder.Services.AddScoped<IConsumerGroupMessageStatusRepository, ConsumerGroupMessageStatusRepository>();
+builder.Services.AddScoped<IConsumerGroupOffsetRepository, ConsumerGroupOffsetRepository>();
+builder.Services.AddScoped<IConsumerRepository, ConsumerRepository>();
 
 var app = builder.Build();
 
@@ -45,11 +48,8 @@ consumerEndpointGroup.MapGet("/{consumerId}/poll", async (Guid consumerId, ICons
         Results.NoContent() : Results.Ok(result);
 });
 
-consumerEndpointGroup.MapPost("/{consumerId}/poll", async (Guid consumerId, ConsumerCommitRequest request, IConsumerService consumerService) =>
-{
-    return await consumerService.TryCommitMessages(consumerId, request)?
-            Results.Ok():
-            Results.Conflict(); // поработать со статус кодами
-});
+consumerEndpointGroup.MapPost("/{consumerId}/poll", async (Guid consumerId, ConsumerCommitRequest request, IConsumerService consumerService) => await consumerService.TryCommitMessages(consumerId, request)?
+    Results.Ok():
+    Results.Conflict()); //поработать со статус кодами
 
 app.Run();
