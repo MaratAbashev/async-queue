@@ -1,26 +1,32 @@
+using ConsumerClient;
+using ConsumerClient.Abstractions;
 using DatabaseConsumer;
 using DatabaseConsumer.Abstractions;
-using DatabaseConsumer.Services;
 using DatabaseConsumer.Services.Database;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
 
-builder.Services.AddHttpClient<IConsumerService<string>, ConsumerService<string>>(client =>
+builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_ =>
 {
-    var brokerUrl = builder.Configuration["MessageBroker"];
+    var brokerUrl = builder.Configuration["MessageBroker:Host"];
+    var consumerGroup = builder.Configuration["MessageBroker:ConsumerGroup"];
     if (string.IsNullOrEmpty(brokerUrl))
     {
         throw new NullReferenceException("Please provide a broker url");
     }
-    client.BaseAddress = new Uri(brokerUrl);
+
+    if (string.IsNullOrEmpty(consumerGroup))
+    {
+        throw new NullReferenceException("Please provide a consumer group");
+    }
+    return new ConsumerClient<string>(consumerGroup, brokerUrl);
 });
 builder.Services.AddDbContext<ConsumerDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("ConsumerDb"));
 }, contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddSingleton<IConsumerService<string>, ConsumerService<string>>();
 builder.Services.AddSingleton<IDbConsumerRepository, DbConsumerRepository>();
 var host = builder.Build();
 host.Run();

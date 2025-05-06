@@ -11,24 +11,24 @@ public abstract class Repository<TEntity, TId>:
     where TId : struct
 {
     protected readonly DbSet<TEntity> _dbSet;
-    protected readonly BrokerDbContext _context;
+    protected readonly BrokerDbContext context;
 
     protected Repository(BrokerDbContext context)
     {
-        _context = context;
-        _dbSet = _context.Set<TEntity>();
+        this.context = context;
+        _dbSet = this.context.Set<TEntity>();
     }
     public virtual async Task<TEntity> AddAsync(TEntity entity)
     {
         await _dbSet.AddAsync(entity);
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return entity;
     }
 
     public virtual async Task<TEntity> UpdateAsync(TEntity entity)
     {
         _dbSet.Update(entity);
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return entity;
     }
 
@@ -41,7 +41,7 @@ public abstract class Repository<TEntity, TId>:
             throw new ArgumentException("Entity not found");
         }
         patch(existingEntity);
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return existingEntity;
     }
 

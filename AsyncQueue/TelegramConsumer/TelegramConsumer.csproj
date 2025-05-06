@@ -11,4 +11,8 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
         <PackageReference Include="Telegram.Bot" Version="22.4.4" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ConsumerClient\ConsumerClient.csproj" />
+    </ItemGroup>
 </Project>

@@ -1,6 +1,8 @@
+using Domain.Entities;
+
 namespace Domain.Abstractions.Repositories;
 
-public interface IConsumerRepository
+public interface IConsumerRepository: IRepository<Consumer, Guid>
 {
     
 }
