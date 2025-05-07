@@ -1,0 +1,66 @@
+﻿services:
+  consumer_service_db:
+    image: consumer_service_db
+    build:
+      context: .
+      dockerfile: DatabaseConsumer/Dockerfile
+    ports:
+      - "5164:8080"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
+    depends_on:
+      - db
+      - broker-api
+      
+      
+  broker-api:
+    image: broker-api
+    build:
+      context: .
+      dockerfile: BrokerApi/Dockerfile
+    ports:
+      - "5163:8080"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_API}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    container_name: db
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_MULTIPLE_DATABASES: ${POSTGRES_DB_API}, {POSTGRES_DB_CONSUMER}
+  
+  consumer-bot:
+    image: consumer-bot
+    build:
+      context: .
+      dockerfile: TelegramConsumer/Dockerfile
+    ports:
+      - "5165:8080"
+    env_file:
+      - .env
+    depends_on:
+      - broker-api
+  
+  console-producer:
+    image: console-producer
+    build:
+      context: .
+      dockerfile: ConsoleProducer/Dockerfile

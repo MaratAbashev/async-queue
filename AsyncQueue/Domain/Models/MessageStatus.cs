@@ -2,7 +2,7 @@ namespace Domain.Models;
 
 public enum MessageStatus
 {
-    Pending,
-    Processing,
-    Processed
+    Pending = 1,
+    Processing = 2,
+    Processed = 3
 }

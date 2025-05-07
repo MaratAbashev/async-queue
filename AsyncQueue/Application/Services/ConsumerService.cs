@@ -2,10 +2,11 @@
 using Domain.Entities;
 using Domain.Models;
 using Domain.Models.ConsumersDtos;
+using Infrastructure.DataBase;
 
 namespace Application.Services;
 
-public class ConsumerService(IConsumerRepository consumerRepository,
+public class ConsumerService(BrokerDbContext context, IConsumerRepository consumerRepository,
     IConsumerGroupRepository consumerGroupRepository,
     IConsumerGroupOffsetRepository consumerGroupOffsetRepository,
     IConsumerGroupMessageStatusRepository consumerGroupMessageStatusRepository) : Domain.Abstractions.Services.IConsumerService
@@ -26,7 +27,6 @@ public class ConsumerService(IConsumerRepository consumerRepository,
         var consumer = new Consumer
         {
             Id = Guid.NewGuid(),
-            ConsumerGroup = consumerGroup,
             ConsumerGroupId = consumerGroup.Id
         };
         try
@@ -78,7 +78,7 @@ public class ConsumerService(IConsumerRepository consumerRepository,
     {
         try
         {
-
+            await context.Database.BeginTransactionAsync();
             var consumer = await consumerRepository.GetByFilterAsync(c => c.Id == consumerId);
             if (consumer == null)
                 throw new KeyNotFoundException($"Consumer with id {consumerId} not found");
@@ -88,7 +88,8 @@ public class ConsumerService(IConsumerRepository consumerRepository,
             var messagesToCommit = processingStatuses
                 .Where(cgms => cgms.Message.PartitionId == consumerCommitRequest.PartitionId);
             await consumerGroupMessageStatusRepository
-                .UpdateConsumerGroupMessageStatusAsync(messagesToCommit, MessageStatus.Processing);
+                .UpdateConsumerGroupMessageStatusAsync(messagesToCommit, MessageStatus.Processed);
+            await context.Database.CommitTransactionAsync();
             return true;
         }
         catch (Exception e)
@@ -100,6 +101,7 @@ public class ConsumerService(IConsumerRepository consumerRepository,
     
     private async Task<List<ConsumerMessage>> GetPendingMessagesByConsumerIdAsync(Guid consumerId)
     {
+        await context.Database.BeginTransactionAsync();
         var consumer = await consumerRepository.GetByFilterAsync(c => c.Id == consumerId);
         if (consumer == null)
             throw new KeyNotFoundException($"Consumer with id {consumerId} not found");
@@ -119,6 +121,7 @@ public class ConsumerService(IConsumerRepository consumerRepository,
         await consumerGroupMessageStatusRepository
             .UpdateConsumerGroupMessageStatusAsync(pendingStatuses,
                 MessageStatus.Processing);
+        await context.Database.CommitTransactionAsync();
         return messages;
     }
 }

@@ -6,6 +6,7 @@ using DatabaseConsumer.Services.Database;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_ =>

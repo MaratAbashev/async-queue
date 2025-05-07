@@ -54,12 +54,11 @@ public class ConsumerClient<T>: IConsumerClient<T>
 
     public async Task<List<ConsumerPollResult<T>>?> Poll(CancellationToken cancellationToken = default)
     {
-        EnsureRegistered();
         while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
-                var result = await _client.GetAsync($"/{_consumerId}/{ConsumerEndpoints.Poll}", cancellationToken);
+                var result = await _client.GetAsync($"consumer/{_consumerId}/{ConsumerEndpoints.Poll}", cancellationToken);
                 if (result.StatusCode == System.Net.HttpStatusCode.NoContent)
                     return null;
                 
@@ -103,7 +102,7 @@ public class ConsumerClient<T>: IConsumerClient<T>
         {
             try
             {
-                var result = await _client.PostAsJsonAsync($"/{_consumerId}/{ConsumerEndpoints.CommitOffset}", commitRequest, cancellationToken);
+                var result = await _client.PostAsJsonAsync($"consumer/{_consumerId}/{ConsumerEndpoints.CommitOffset}", commitRequest, cancellationToken);
                 result.EnsureSuccessStatusCode();
                 return;
             }

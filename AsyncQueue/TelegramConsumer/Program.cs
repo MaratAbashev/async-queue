@@ -6,6 +6,7 @@ using TelegramConsumer.Abstractions;
 using TelegramConsumer.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddSingleton<ITelegramBotClient, TelegramBotClient>(_ =>

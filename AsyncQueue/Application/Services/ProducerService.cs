@@ -93,6 +93,8 @@ public class ProducerService(
             PartitionId = partition.partitionId,
             PartitionNumber = partition.partitionNumber,
             KeyJson = message.Key,
+            KeyType = "string",
+            ValueType = message.ValueType,
             ValueJson = message.ValueJson,
         });
 
@@ -104,7 +106,8 @@ public class ProducerService(
             await consumerGroupMessageStatusRepository.AddAsync(new ConsumerGroupMessageStatus
             {
                 ConsumerGroupId = consumerGroup.Id,
-                MessageId = messageId
+                MessageId = messageId,
+                Status = MessageStatus.Pending
             });
         }
 

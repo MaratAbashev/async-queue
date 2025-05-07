@@ -12,11 +12,12 @@ public class ConsumerGroupMessageStatusRepository(BrokerDbContext context) :
     public async Task<List<ConsumerGroupMessageStatus>> GetAllByStatusAndConsumerGroupIdAsync(int consumerGroupId,
         MessageStatus status)
     {
-        return await _dbSet
+        var result = await _dbSet
             .Where(cgms => cgms.ConsumerGroupId == consumerGroupId
             && cgms.Status == status)
             .Include(cgms => cgms.Message)
             .ToListAsync();
+        return result;
     }
 
     public async Task UpdateConsumerGroupMessageStatusAsync(IEnumerable<ConsumerGroupMessageStatus> consumerGroupMessageStatuses,

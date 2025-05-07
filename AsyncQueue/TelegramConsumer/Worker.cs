@@ -25,6 +25,7 @@ public class Worker(ITelegramBotService telegramBotService, IConsumerClient<stri
                     await telegramBotService.SendMessageAsync(message.Payload!, stoppingToken);
                     await consumerClient.CommitOffset(message.PartitionId, message.Offset, stoppingToken);
                 }
+                await Task.Delay(2000, stoppingToken);
             }
             catch (OperationCanceledException)
             {

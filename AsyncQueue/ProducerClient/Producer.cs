@@ -78,6 +78,7 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         var producerMessage = new ProducerMessage
         {
             Key = JsonSerializer.Serialize(message.Key),
+            ValueType = message.Payload.GetType().Name,
             ValueJson = JsonSerializer.Serialize(message.Payload),
         };
         var messageRequest = new ProducerSendRequest

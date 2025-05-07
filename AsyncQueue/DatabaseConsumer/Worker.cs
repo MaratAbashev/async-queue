@@ -25,6 +25,7 @@ public class Worker(IDbConsumerRepository consumerRepository, IConsumerClient<st
                     await consumerRepository.AddMessageAsync(message.Payload!, stoppingToken);
                     await consumerClient.CommitOffset(message.PartitionId, message.Offset, stoppingToken);
                 }
+                await Task.Delay(2000, stoppingToken);
             }
             catch (OperationCanceledException)
             {

@@ -1,5 +1,5 @@
 using Application.Services;
-using BrokerApi;
+using BrokerApi.Filters;
 using Domain.Abstractions.Repositories;
 using Domain.Abstractions.Services;
 using Domain.Models.ConsumersDtos;
@@ -9,9 +9,9 @@ using Infrastructure.DataBase.Repositories;
 using IConsumerService = Domain.Abstractions.Services.IConsumerService;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddDbContext<BrokerDbContext>();
-builder.Services.AddScoped<DataBaseStartUp>();
+builder.Services.AddTransient<IStartupFilter, DataBaseStartUpFilter>();
 builder.Services.AddScoped<IProducerService, ProducerService>();
 builder.Services.AddScoped<IConsumerService, ConsumerService>();
 builder.Services.AddScoped<IProducerRepository, ProducerRepository>();
@@ -24,22 +24,19 @@ builder.Services.AddScoped<IConsumerRepository, ConsumerRepository>();
 
 var app = builder.Build();
 
-app.MapPost("/initialize", async (DataBaseStartUp startUp) => await startUp.Initialize());
+var producerGroup = app.MapGroup("/producer");
 
-app.MapPost("/producer/register",
+producerGroup.MapPost("/producer/register",
     async (ProducerRegistrationRequest request, IProducerService producerService) =>
         await producerService.RegisterAsync(request));
 
-app.MapPost("/producer/produce",
+producerGroup.MapPost("/producer/produce",
     async (ProducerSendRequest request, IProducerService producerService) =>
         await producerService.ProduceAsync(request));
 
 var consumerEndpointGroup = app.MapGroup("/consumer");
 
-consumerEndpointGroup.MapPost("/register", async (ConsumerRegisterRequest request, IConsumerService consumerService) =>
-{
-    await consumerService.RegisterConsumerAsync(request);
-});
+consumerEndpointGroup.MapPost("/register", async (ConsumerRegisterRequest request, IConsumerService consumerService) => await consumerService.RegisterConsumerAsync(request));
 
 consumerEndpointGroup.MapGet("/{consumerId}/poll", async (Guid consumerId, IConsumerService consumerService) =>
 {
@@ -48,7 +45,7 @@ consumerEndpointGroup.MapGet("/{consumerId}/poll", async (Guid consumerId, ICons
         Results.NoContent() : Results.Ok(result);
 });
 
-consumerEndpointGroup.MapPost("/{consumerId}/poll", async (Guid consumerId, ConsumerCommitRequest request, IConsumerService consumerService) => await consumerService.TryCommitMessages(consumerId, request)?
+consumerEndpointGroup.MapPost("/{consumerId}/commit", async (Guid consumerId, ConsumerCommitRequest request, IConsumerService consumerService) => await consumerService.TryCommitMessages(consumerId, request)?
     Results.Ok():
     Results.Conflict()); //поработать со статус кодами
 
