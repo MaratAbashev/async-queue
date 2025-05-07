@@ -26,11 +26,11 @@ var app = builder.Build();
 
 var producerGroup = app.MapGroup("/producer");
 
-producerGroup.MapPost("/producer/register",
+producerGroup.MapPost("/register",
     async (ProducerRegistrationRequest request, IProducerService producerService) =>
         await producerService.RegisterAsync(request));
 
-producerGroup.MapPost("/producer/produce",
+producerGroup.MapPost("/produce",
     async (ProducerSendRequest request, IProducerService producerService) =>
         await producerService.ProduceAsync(request));
 
