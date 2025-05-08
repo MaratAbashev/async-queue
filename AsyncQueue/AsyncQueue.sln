@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramConsumer", "TelegramConsumer\TelegramConsumer.csproj", "{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseConsumer", "DatabaseConsumer\DatabaseConsumer.csproj", "{7D741CD6-62BD-4350-B952-5909433F960F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerClient", "ProducerClient\ProducerClient.csproj", "{5A9BE632-9F3B-4139-9B7C-BF50F9B48076}"
@@ -23,16 +21,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramConsumer", "TelegramConsumer\TelegramConsumer.csproj", "{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{45A0DD3E-84EA-45F6-ABB1-D02DC3B81D6F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7D741CD6-62BD-4350-B952-5909433F960F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7D741CD6-62BD-4350-B952-5909433F960F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D741CD6-62BD-4350-B952-5909433F960F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -65,5 +61,9 @@ Global
 		{844F3F25-0E03-4126-9520-52CA01B11399}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{844F3F25-0E03-4126-9520-52CA01B11399}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{844F3F25-0E03-4126-9520-52CA01B11399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

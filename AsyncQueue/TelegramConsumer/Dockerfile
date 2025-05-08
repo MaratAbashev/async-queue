@@ -6,8 +6,6 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["TelegramConsumer/TelegramConsumer.csproj", "TelegramConsumer/"]
-COPY ["ConsumerClient/ConsumerClient.csproj", "ConsumerClient/"]
-COPY ["Domain/Domain.csproj", "Domain/"]
 RUN dotnet restore "TelegramConsumer/TelegramConsumer.csproj"
 COPY . .
 WORKDIR "/src/TelegramConsumer"
