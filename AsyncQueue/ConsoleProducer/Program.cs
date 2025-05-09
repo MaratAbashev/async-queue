@@ -1,7 +1,7 @@
 ﻿using ProducerClient;
 using ProducerClient.Models;
 
-var producerBuilder = new ProducerBuilder<Ignore, string>("http://api");
+var producerBuilder = new ProducerBuilder<Ignore, string>("http://api:5163");
 
 var producer = producerBuilder.Build();
 await producer.RegisterAsync();

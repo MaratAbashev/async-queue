@@ -15,6 +15,7 @@ public class ProducerService(
 {
     public async Task<ProducerRegistrationResponse> RegisterAsync(ProducerRegistrationRequest registerRequest, CancellationToken cancellationToken = default)
     {
+        Console.WriteLine("RegisterAsync");
         var producer = new Producer
         {
             Id = registerRequest.ProducerId
