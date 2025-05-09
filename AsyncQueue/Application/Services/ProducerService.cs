@@ -92,8 +92,7 @@ public class ProducerService(
             Id = messageId,
             PartitionId = partition.partitionId,
             PartitionNumber = partition.partitionNumber,
-            KeyJson = message.Key,
-            KeyType = "string",
+            Key = message.Key,
             ValueType = message.ValueType,
             ValueJson = message.ValueJson,
         });

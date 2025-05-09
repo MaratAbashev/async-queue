@@ -9,13 +9,12 @@
     env_file:
       - .env
     environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_CONSUMER}
+      POSTGRES_USER: ${POSTGRES_USER_CONSUMER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_CONSUMER}
       POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
     depends_on:
-      - db
-      - broker-api
+      - db-consumer
       
       
   broker-api:
@@ -28,25 +27,37 @@
     env_file:
       - .env
     environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_API}
+      POSTGRES_USER: ${POSTGRES_USER_API}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_API}
       POSTGRES_DB: ${POSTGRES_DB_API}
     depends_on:
-      - db
+      - db-broker-api
 
-  db:
+  db-broker-api:
     image: postgres:latest
-    container_name: db
+    container_name: db-broker-api
     ports:
-      - "5433:5432"
+      - "5438:5432"
     env_file:
       - .env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_MULTIPLE_DATABASES: ${POSTGRES_DB_API}, {POSTGRES_DB_CONSUMER}
+      POSTGRES_USER: ${POSTGRES_USER_API}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_API}
+      POSTGRES_DB: ${POSTGRES_DB_API}
   
+  db-consumer:
+    image: postgres:latest
+    container_name: db-consumer
+    ports:
+      - "5439:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_CONSUMER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_CONSUMER}
+      POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
+      
   consumer-bot:
     image: consumer-bot
     build:
@@ -64,3 +75,7 @@
     build:
       context: .
       dockerfile: ConsoleProducer/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - broker-api
