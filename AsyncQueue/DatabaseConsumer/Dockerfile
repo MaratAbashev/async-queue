@@ -6,8 +6,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["DatabaseConsumer/DatabaseConsumer.csproj", "DatabaseConsumer/"]
-COPY ["ConsumerClient/ConsumerClient.csproj", "ConsumerClient/"]
 COPY ["Domain/Domain.csproj", "Domain/"]
+COPY ["ConsumerClient/ConsumerClient.csproj", "ConsumerClient/"]
 RUN dotnet restore "DatabaseConsumer/DatabaseConsumer.csproj"
 COPY . .
 WORKDIR "/src/DatabaseConsumer"
