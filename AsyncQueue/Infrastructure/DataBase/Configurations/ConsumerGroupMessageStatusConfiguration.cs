@@ -17,10 +17,6 @@ public class ConsumerGroupMessageStatusConfiguration: IEntityTypeConfiguration<C
             .ValueGeneratedOnAdd();
         
         builder
-            .Property(cgms => cgms.Status)
-            .HasDefaultValue(MessageStatus.Pending);
-        
-        builder
             .HasOne(cgms => cgms.Message)
             .WithMany(m => m.ConsumerGroupMessageStatuses)
             .HasForeignKey(cgms => cgms.MessageId)

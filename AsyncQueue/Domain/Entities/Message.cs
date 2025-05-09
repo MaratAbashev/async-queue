@@ -5,8 +5,7 @@ namespace Domain.Entities;
 public class Message: IEntity<Guid>
 {
     public int PartitionId { get; set; }
-    public string KeyJson { get; set; }
-    public string KeyType { get; set; }
+    public string Key { get; set; }
     public string ValueJson { get; set; }
     public string ValueType { get; set; }
     public int PartitionNumber { get; set; }

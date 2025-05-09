@@ -24,6 +24,6 @@ public class ConsumerGroupConfiguration: IEntityTypeConfiguration<ConsumerGroup>
         builder.HasMany(cg => cg.Consumers)
             .WithOne(c => c.ConsumerGroup)
             .HasForeignKey(c => c.ConsumerGroupId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -1,17 +1,19 @@
 using Application.Services;
-using BrokerApi.Filters;
 using Domain.Abstractions.Repositories;
 using Domain.Abstractions.Services;
+using Domain.Entities;
 using Domain.Models.ConsumersDtos;
 using Domain.Models.ProducersDtos;
 using Infrastructure.DataBase;
 using Infrastructure.DataBase.Repositories;
+using Microsoft.EntityFrameworkCore;
 using IConsumerService = Domain.Abstractions.Services.IConsumerService;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddDbContext<BrokerDbContext>();
-builder.Services.AddTransient<IStartupFilter, DataBaseStartUpFilter>();
 builder.Services.AddScoped<IProducerService, ProducerService>();
 builder.Services.AddScoped<IConsumerService, ConsumerService>();
 builder.Services.AddScoped<IProducerRepository, ProducerRepository>();
@@ -23,6 +25,53 @@ builder.Services.AddScoped<IConsumerGroupOffsetRepository, ConsumerGroupOffsetRe
 builder.Services.AddScoped<IConsumerRepository, ConsumerRepository>();
 
 var app = builder.Build();
+
+var configuration = app.Configuration;
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<BrokerDbContext>();
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+try
+{
+    context.Database.Migrate();
+    context.Topics.Add(new Topic
+    {
+        TopicName = configuration["MessageBroker:Topic"],
+    });
+    context.SaveChanges();
+    var topicId = context.Topics.First().Id;
+    int.TryParse(configuration["MessageBroker:PartitionCount"], out int partitionCount);
+    for (int i = 0; i < partitionCount; i++)
+    {
+        context.Partitions.Add(new Partition
+        {
+            TopicId = topicId,
+        });
+    }
+
+    context.ConsumerGroups.Add(new ConsumerGroup
+    {
+        TopicId = topicId,
+        ConsumerGroupName = configuration["MessageBroker:ConsumerGroup"],
+    });
+    context.SaveChanges();
+    var partitionIds = context.Partitions.Select(p => p.Id).ToList();
+    var consumerGroupId = context.ConsumerGroups.First().Id;
+    foreach (var partitionId in partitionIds)
+    {
+        context.ConsumerGroupOffsets.Add(new ConsumerGroupOffset
+        {
+            PartitionId = partitionId,
+            Offset = 0,
+            ConsumerGroupId = consumerGroupId
+        });
+    }
+
+    context.SaveChanges();
+}
+catch(Exception ex)
+{
+    logger.LogCritical(ex.Message);
+}
 
 var producerGroup = app.MapGroup("/producer");
 
