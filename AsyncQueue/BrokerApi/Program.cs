@@ -5,6 +5,7 @@ using Domain.Entities;
 using Domain.Models.ConsumersDtos;
 using Domain.Models.ProducersDtos;
 using Infrastructure.DataBase;
+using Infrastructure.DataBase.Options;
 using Infrastructure.DataBase.Repositories;
 using Microsoft.EntityFrameworkCore;
 using IConsumerService = Domain.Abstractions.Services.IConsumerService;
@@ -12,6 +13,7 @@ using IConsumerService = Domain.Abstractions.Services.IConsumerService;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+builder.Services.Configure<BrokerStartingData>(builder.Configuration.GetSection(nameof(BrokerStartingData)));
 
 builder.Services.AddDbContext<BrokerDbContext>();
 builder.Services.AddScoped<IProducerService, ProducerService>();
@@ -33,40 +35,40 @@ var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 try
 {
     context.Database.Migrate();
-    context.Topics.Add(new Topic
-    {
-        TopicName = configuration["MessageBroker:Topic"],
-    });
-    context.SaveChanges();
-    var topicId = context.Topics.First().Id;
-    int.TryParse(configuration["MessageBroker:PartitionCount"], out int partitionCount);
-    for (int i = 0; i < partitionCount; i++)
-    {
-        context.Partitions.Add(new Partition
-        {
-            TopicId = topicId,
-        });
-    }
-
-    context.ConsumerGroups.Add(new ConsumerGroup
-    {
-        TopicId = topicId,
-        ConsumerGroupName = configuration["MessageBroker:ConsumerGroup"],
-    });
-    context.SaveChanges();
-    var partitionIds = context.Partitions.Select(p => p.Id).ToList();
-    var consumerGroupId = context.ConsumerGroups.First().Id;
-    foreach (var partitionId in partitionIds)
-    {
-        context.ConsumerGroupOffsets.Add(new ConsumerGroupOffset
-        {
-            PartitionId = partitionId,
-            Offset = 0,
-            ConsumerGroupId = consumerGroupId
-        });
-    }
-
-    context.SaveChanges();
+    // context.Topics.Add(new Topic
+    // {
+    //     TopicName = configuration["MessageBroker:Topic"],
+    // });
+    // context.SaveChanges();
+    // var topicId = context.Topics.First().Id;
+    // int.TryParse(configuration["MessageBroker:PartitionCount"], out int partitionCount);
+    // for (int i = 0; i < partitionCount; i++)
+    // {
+    //     context.Partitions.Add(new Partition
+    //     {
+    //         TopicId = topicId,
+    //     });
+    // }
+    //
+    // context.ConsumerGroups.Add(new ConsumerGroup
+    // {
+    //     TopicId = topicId,
+    //     ConsumerGroupName = configuration["MessageBroker:ConsumerGroup"],
+    // });
+    // context.SaveChanges();
+    // var partitionIds = context.Partitions.Select(p => p.Id).ToList();
+    // var consumerGroupId = context.ConsumerGroups.First().Id;
+    // foreach (var partitionId in partitionIds)
+    // {
+    //     context.ConsumerGroupOffsets.Add(new ConsumerGroupOffset
+    //     {
+    //         PartitionId = partitionId,
+    //         Offset = 0,
+    //         ConsumerGroupId = consumerGroupId
+    //     });
+    // }
+    //
+    // context.SaveChanges();
 }
 catch(Exception ex)
 {
