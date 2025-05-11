@@ -38,7 +38,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("ConsumerGroupId");
 
-                    b.ToTable("Consumers");
+                    b.ToTable("Consumers", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ConsumerGroup", b =>
@@ -62,7 +62,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("TopicId");
 
-                    b.ToTable("ConsumerGroups");
+                    b.ToTable("ConsumerGroups", (string)null);
 
                     b.HasData(
                         new
@@ -100,7 +100,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("ConsumerGroupMessageStatuses");
+                    b.ToTable("ConsumerGroupMessageStatuses", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.ConsumerGroupOffset", b =>
@@ -131,7 +131,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("PartitionId");
 
-                    b.ToTable("ConsumerGroupOffsets");
+                    b.ToTable("ConsumerGroupOffsets", (string)null);
 
                     b.HasData(
                         new
@@ -183,7 +183,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("PartitionId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Partition", b =>
@@ -204,7 +204,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("TopicId");
 
-                    b.ToTable("Partitions");
+                    b.ToTable("Partitions", (string)null);
 
                     b.HasData(
                         new
@@ -235,7 +235,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Producers");
+                    b.ToTable("Producers", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Topic", b =>
@@ -257,7 +257,7 @@ namespace Infrastructure.DataBase.Migrations
                     b.HasIndex("TopicName")
                         .IsUnique();
 
-                    b.ToTable("Topics");
+                    b.ToTable("Topics", (string)null);
 
                     b.HasData(
                         new
