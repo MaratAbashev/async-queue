@@ -73,7 +73,7 @@ try
 }
 catch(Exception ex)
 {
-    logger.LogCritical(ex.Message);
+    logger.LogCritical(ex.Message + "qqqqq");
 }
 
 var producerGroup = app.MapGroup("/producer");

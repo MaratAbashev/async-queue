@@ -76,7 +76,8 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
             {
                 freePartition.Consumers?.Remove(previousConsumer);
             }
-
+            await context.SaveChangesAsync();
+            
             return new ConsumerRegisterResponse
             {
                 ConsumerId = consumer.Id,
@@ -130,7 +131,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
 
             var messages = partition!.Messages
                 .Skip(offset)
-                .Where(m => m.ConsumerGroupMessageStatuses
+                .Where(m => !m.IsDeleted && m.ConsumerGroupMessageStatuses
                     .First(cgms => cgms.ConsumerGroupId == consumerGroupId).Status == MessageStatus.Pending)
                 .Take(batchSize);
             
@@ -178,18 +179,53 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
     {
         try
         {
-            await context.Database.BeginTransactionAsync();
-            var consumer = await consumerRepository.GetByFilterAsync(c => c.Id == consumerId);
-            if (consumer == null)
-                throw new KeyNotFoundException($"Consumer with id {consumerId} not found");
-            var consumerGroupId = consumer.ConsumerGroupId;
-            var processingStatuses = await consumerGroupMessageStatusRepository
-                .GetAllByStatusAndConsumerGroupIdAsync(consumerGroupId, MessageStatus.Processing);
-            var messagesToCommit = processingStatuses
-                .Where(cgms => cgms.Message.PartitionId == consumerCommitRequest.PartitionId);
-            await consumerGroupMessageStatusRepository
-                .UpdateConsumerGroupMessageStatusAsync(messagesToCommit, MessageStatus.Processed);
-            await context.Database.CommitTransactionAsync();
+            if (consumerCommitRequest.SuccessProcessedMessagesCount > consumerCommitRequest.BatchSize)
+            {
+                return false;
+            }
+            var consumerGroupId = (await context.Consumers
+                .FirstAsync(c => c.Id == consumerId)).ConsumerGroupId;
+            
+            var messages = context.Messages
+                .Include(m => m.ConsumerGroupMessageStatuses)
+                .Where(m => m.PartitionNumber >= consumerCommitRequest.Offset &&
+                            m.PartitionNumber <= consumerCommitRequest.Offset + consumerCommitRequest.BatchSize);
+            
+            var processedMessages = messages
+                .Take(consumerCommitRequest.SuccessProcessedMessagesCount ?? consumerCommitRequest.BatchSize);
+            
+            var invalidMessages = messages
+                .Except(processedMessages);
+
+            foreach (var message in invalidMessages)
+            {
+                message.IsDeleted = true;
+            }
+            
+            foreach (var message in processedMessages)
+            {
+                var consumerGroupMessageStatus = message.ConsumerGroupMessageStatuses.
+                    First(cgmo => cgmo.ConsumerGroupId == consumerGroupId);
+                consumerGroupMessageStatus.Status = MessageStatus.Processed;
+            }
+            
+            var currentConsumerGroupOffset = context.ConsumerGroupOffsets
+                .First(c => c.ConsumerGroupId == consumerGroupId && 
+                                     c.PartitionId == consumerCommitRequest.PartitionId);
+            
+            if (consumerCommitRequest.Offset == currentConsumerGroupOffset.Offset)
+            {
+                currentConsumerGroupOffset.Offset = consumerCommitRequest.Offset + consumerCommitRequest.BatchSize;
+            }
+            else if (consumerCommitRequest.Offset > currentConsumerGroupOffset.Offset)
+            {
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+            await context.SaveChangesAsync();
             return true;
         }
         catch (Exception e)

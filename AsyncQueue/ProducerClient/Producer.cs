@@ -26,7 +26,7 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
 
     public async Task RegisterAsync(CancellationToken cancellationToken = default)
     {
-        await Task.Delay(5000, cancellationToken);
+        await Task.Delay(10000, cancellationToken);
         if (_isRegistered)
         {
             throw new InvalidOperationException("Already registered");
@@ -78,7 +78,7 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         Interlocked.Increment(ref _sequenceNumber);
         var producerMessage = new ProducerMessage
         {
-            Key = JsonSerializer.Serialize(message.Key),
+            Key = (typeof(TKey) is Ignore) ? null: JsonSerializer.Serialize(message.Key),
             ValueType = message.Payload.GetType().Name,
             ValueJson = JsonSerializer.Serialize(message.Payload),
         };

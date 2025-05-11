@@ -17,7 +17,8 @@ public class ProducerService(
     {
         var producer = new Producer
         {
-            Id = registerRequest.ProducerId
+            Id = registerRequest.ProducerId,
+            CurrentSequenceNumber = 0
         };
         try
         {

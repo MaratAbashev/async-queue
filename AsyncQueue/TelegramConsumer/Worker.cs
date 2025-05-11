@@ -23,7 +23,7 @@ public class Worker(ITelegramBotService telegramBotService, IConsumerClient<stri
                 foreach (var message in result.MessagesPayload)
                 {
                     await telegramBotService.SendMessageAsync(message!, stoppingToken);
-                    await consumerClient.CommitOffset(result.PartitionId, result.Offset, stoppingToken);
+                    await consumerClient.CommitOffset(result.PartitionId, result.Offset, result.MessagesPayload.Count,stoppingToken);
                 }
                 await Task.Delay(2000, stoppingToken);
             }

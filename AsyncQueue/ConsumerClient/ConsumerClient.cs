@@ -92,13 +92,15 @@ public class ConsumerClient<T>: IConsumerClient<T>
         return null;
     }
 
-    public async Task CommitOffset(int partitionId, long offset, CancellationToken cancellationToken = default)
+    public async Task CommitOffset(int partitionId, int offset, int? successMessagesCount, CancellationToken cancellationToken = default)
     {
         EnsureRegistered();
         var commitRequest = new ConsumerCommitRequest
         {
             PartitionId = partitionId,
-            Offset = offset
+            Offset = offset,
+            BatchSize = _batchSize,
+            SuccessProcessedMessagesCount = successMessagesCount
         };
         while (!cancellationToken.IsCancellationRequested)
         {
