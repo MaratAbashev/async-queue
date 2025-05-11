@@ -8,7 +8,7 @@ using TelegramConsumer.Services;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddHostedService<Worker>();
-
+int batchSize = 5;
 builder.Services.AddSingleton<ITelegramBotClient, TelegramBotClient>(_ =>
 {
     var token = builder.Configuration["TelegramBotClientOptions:Token"];
@@ -31,7 +31,7 @@ builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_
     {
         throw new NullReferenceException("Please provide a consumer group");
     }
-    return new ConsumerClient<string>(consumerGroup, brokerUrl);
+    return new ConsumerClient<string>(consumerGroup, brokerUrl, batchSize);
 });
 builder.Services.AddSingleton<ITelegramBotService, TelegramBotService>();
 

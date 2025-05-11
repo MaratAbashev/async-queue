@@ -10,15 +10,17 @@ namespace ConsumerClient;
 
 public class ConsumerClient<T>: IConsumerClient<T>
 {
+    private readonly HttpClient _client;
     private Guid _consumerId;
     private bool _isRegistered;
-    private readonly HttpClient _client;
+    private int _batchSize;
     public string ConsumerGroup { get; }
-    public ConsumerClient(string consumerGroup, string brokerUrl)
+    public ConsumerClient(string consumerGroup, string brokerUrl, int batchSize)
     {
         ConsumerGroup = consumerGroup;
         _client = new HttpClient();
         _client.BaseAddress = new Uri(brokerUrl);
+        _batchSize = batchSize;
     }
 
     public async Task Register(CancellationToken cancellationToken = default)
@@ -52,13 +54,13 @@ public class ConsumerClient<T>: IConsumerClient<T>
         }
     }
 
-    public async Task<List<ConsumerPollResult<T>>?> Poll(CancellationToken cancellationToken = default)
+    public async Task<ConsumerPollResult<T>?> Poll(CancellationToken cancellationToken = default)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
-                var result = await _client.GetAsync($"consumer/{_consumerId}/{ConsumerEndpoints.Poll}", cancellationToken);
+                var result = await _client.GetAsync($"consumer/{_consumerId}/{_batchSize}/{ConsumerEndpoints.Poll}", cancellationToken);
                 if (result.StatusCode == System.Net.HttpStatusCode.NoContent)
                     return null;
                 
@@ -72,14 +74,14 @@ public class ConsumerClient<T>: IConsumerClient<T>
                     throw new ArgumentException("Consumer response is empty");
                 if (typeof(T).Name != consumerPollResponse.ValueType) // or check type fullname
                     throw new InvalidDataContractException("Consumer message is not of type " + consumerPollResponse.ValueType);
-                return consumerPollResponse.ConsumerMessages
-                    .Select(m => new ConsumerPollResult<T>
-                    {
-                        PartitionId = m.PartitionId,
-                        Offset = m.Offset,
-                        Payload = JsonSerializer.Deserialize<T>(m.ValueJson)
-                    }) // Order by offset if required
-                    .ToList();
+                return new ConsumerPollResult<T>
+                {
+                    Offset = consumerPollResponse.Offset,
+                    PartitionId = consumerPollResponse.PartitionId,
+                    MessagesPayload = consumerPollResponse.ConsumerMessages
+                        .Select(cm => JsonSerializer.Deserialize<T>(cm.ValueJson))
+                        .ToList()
+                };
             }
             catch (Exception ex) when(ex is not OperationCanceledException)
             {

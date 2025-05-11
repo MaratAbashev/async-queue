@@ -8,6 +8,7 @@ public class Partition: IEntity<int>
     public Topic Topic { get; set; }
     public List<ConsumerGroupOffset> ConsumerGroupOffsets { get; set; }
     public List<Message> Messages { get; set; }
+    public List<Consumer>? Consumers { get; set; }
     public int Id { get; set; }
     public bool IsDeleted { get; set; }
 }

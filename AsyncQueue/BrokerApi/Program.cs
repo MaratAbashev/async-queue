@@ -8,6 +8,7 @@ using Infrastructure.DataBase;
 using Infrastructure.DataBase.Options;
 using Infrastructure.DataBase.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using IConsumerService = Domain.Abstractions.Services.IConsumerService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,9 +90,9 @@ var consumerEndpointGroup = app.MapGroup("/consumer");
 
 consumerEndpointGroup.MapPost("/register", async (ConsumerRegisterRequest request, IConsumerService consumerService) => await consumerService.RegisterConsumerAsync(request));
 
-consumerEndpointGroup.MapGet("/{consumerId}/poll", async (Guid consumerId, IConsumerService consumerService) =>
+consumerEndpointGroup.MapGet("/{consumerId}/{batchSize}/poll", async (Guid consumerId, int batchSize, IConsumerService consumerService) =>
 {
-    var result = await consumerService.Poll(consumerId);
+    var result = await consumerService.Poll(consumerId, batchSize);
     return result.ConsumerMessages is { Count: 0 } ? // поработать лучше со статус кодами
         Results.NoContent() : Results.Ok(result);
 });

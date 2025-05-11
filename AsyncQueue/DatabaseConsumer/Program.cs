@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddHostedService<Worker>();
-
+int batchSize = 5;
 builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_ =>
 {
     var brokerUrl = builder.Configuration["MessageBroker:Host"];
@@ -22,7 +22,7 @@ builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_
     {
         throw new NullReferenceException("Please provide a consumer group");
     }
-    return new ConsumerClient<string>(consumerGroup, brokerUrl);
+    return new ConsumerClient<string>(consumerGroup, brokerUrl, batchSize);
 });
 builder.Services.AddDbContext<ConsumerDbContext>(contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddSingleton<IDbConsumerRepository, DbConsumerRepository>();
