@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Migrations
+namespace Infrastructure.DataBase.Migrations
 {
     [DbContext(typeof(BrokerDbContext))]
-    [Migration("20250511000214_AddedInitializationData")]
-    partial class AddedInitializationData
+    [Migration("20250511143241_Third")]
+    partial class Third
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ConsumerPartition", b =>
+                {
+                    b.Property<Guid>("ConsumersId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PartitionsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ConsumersId", "PartitionsId");
+
+                    b.HasIndex("PartitionsId");
+
+                    b.ToTable("ConsumerPartition");
+                });
 
             modelBuilder.Entity("Domain.Entities.Consumer", b =>
                 {
@@ -71,7 +86,7 @@ namespace Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            ConsumerGroupName = "group1",
+                            ConsumerGroupName = "",
                             IsDeleted = false,
                             TopicId = 1
                         });
@@ -144,14 +159,6 @@ namespace Infrastructure.Migrations
                             IsDeleted = false,
                             Offset = 0,
                             PartitionId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ConsumerGroupId = 1,
-                            IsDeleted = false,
-                            Offset = 0,
-                            PartitionId = 2
                         });
                 });
 
@@ -215,12 +222,6 @@ namespace Infrastructure.Migrations
                             Id = 1,
                             IsDeleted = false,
                             TopicId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            IsDeleted = false,
-                            TopicId = 1
                         });
                 });
 
@@ -267,8 +268,23 @@ namespace Infrastructure.Migrations
                         {
                             Id = 1,
                             IsDeleted = false,
-                            TopicName = "topic1"
+                            TopicName = ""
                         });
+                });
+
+            modelBuilder.Entity("ConsumerPartition", b =>
+                {
+                    b.HasOne("Domain.Entities.Consumer", null)
+                        .WithMany()
+                        .HasForeignKey("ConsumersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Partition", null)
+                        .WithMany()
+                        .HasForeignKey("PartitionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Consumer", b =>

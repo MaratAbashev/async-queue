@@ -22,6 +22,21 @@ namespace Infrastructure.DataBase.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ConsumerPartition", b =>
+                {
+                    b.Property<Guid>("ConsumersId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PartitionsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ConsumersId", "PartitionsId");
+
+                    b.HasIndex("PartitionsId");
+
+                    b.ToTable("ConsumerPartition");
+                });
+
             modelBuilder.Entity("Domain.Entities.Consumer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -38,7 +53,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("ConsumerGroupId");
 
-                    b.ToTable("Consumers", (string)null);
+                    b.ToTable("Consumers");
                 });
 
             modelBuilder.Entity("Domain.Entities.ConsumerGroup", b =>
@@ -62,13 +77,13 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("TopicId");
 
-                    b.ToTable("ConsumerGroups", (string)null);
+                    b.ToTable("ConsumerGroups");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            ConsumerGroupName = "group1",
+                            ConsumerGroupName = "",
                             IsDeleted = false,
                             TopicId = 1
                         });
@@ -100,7 +115,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("ConsumerGroupMessageStatuses", (string)null);
+                    b.ToTable("ConsumerGroupMessageStatuses");
                 });
 
             modelBuilder.Entity("Domain.Entities.ConsumerGroupOffset", b =>
@@ -131,7 +146,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("PartitionId");
 
-                    b.ToTable("ConsumerGroupOffsets", (string)null);
+                    b.ToTable("ConsumerGroupOffsets");
 
                     b.HasData(
                         new
@@ -141,14 +156,6 @@ namespace Infrastructure.DataBase.Migrations
                             IsDeleted = false,
                             Offset = 0,
                             PartitionId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ConsumerGroupId = 1,
-                            IsDeleted = false,
-                            Offset = 0,
-                            PartitionId = 2
                         });
                 });
 
@@ -183,7 +190,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("PartitionId");
 
-                    b.ToTable("Messages", (string)null);
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("Domain.Entities.Partition", b =>
@@ -204,18 +211,12 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasIndex("TopicId");
 
-                    b.ToTable("Partitions", (string)null);
+                    b.ToTable("Partitions");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            IsDeleted = false,
-                            TopicId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
                             IsDeleted = false,
                             TopicId = 1
                         });
@@ -235,7 +236,7 @@ namespace Infrastructure.DataBase.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Producers", (string)null);
+                    b.ToTable("Producers");
                 });
 
             modelBuilder.Entity("Domain.Entities.Topic", b =>
@@ -257,15 +258,30 @@ namespace Infrastructure.DataBase.Migrations
                     b.HasIndex("TopicName")
                         .IsUnique();
 
-                    b.ToTable("Topics", (string)null);
+                    b.ToTable("Topics");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
                             IsDeleted = false,
-                            TopicName = "topic1"
+                            TopicName = ""
                         });
+                });
+
+            modelBuilder.Entity("ConsumerPartition", b =>
+                {
+                    b.HasOne("Domain.Entities.Consumer", null)
+                        .WithMany()
+                        .HasForeignKey("ConsumersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Partition", null)
+                        .WithMany()
+                        .HasForeignKey("PartitionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Domain.Entities.Consumer", b =>
