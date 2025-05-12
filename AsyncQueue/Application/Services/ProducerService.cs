@@ -129,9 +129,8 @@ public class ProducerService(
         }
         else
         {
-            partitionId = groupMessagesByPartitionId.Values
-                .Select(messages => messages.Count())
-                .Min();
+            partitionId = groupMessagesByPartitionId
+                .MinBy(pair => pair.Value.Count()).Key;
         }
         var partitionNumber = groupMessagesByPartitionId[partitionId].Count();
         

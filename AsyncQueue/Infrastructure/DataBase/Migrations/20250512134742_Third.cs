@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Infrastructure.DataBase.Migrations
 {
     /// <inheritdoc />
@@ -11,6 +13,14 @@ namespace Infrastructure.DataBase.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "Key",
+                table: "Messages",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text");
+
             migrationBuilder.CreateTable(
                 name: "ConsumerPartition",
                 columns: table => new
@@ -38,22 +48,30 @@ namespace Infrastructure.DataBase.Migrations
             migrationBuilder.InsertData(
                 table: "Topics",
                 columns: new[] { "Id", "IsDeleted", "TopicName" },
-                values: new object[] { 1, false, "" });
+                values: new object[] { 1, false, "topic1" });
 
             migrationBuilder.InsertData(
                 table: "ConsumerGroups",
                 columns: new[] { "Id", "ConsumerGroupName", "IsDeleted", "TopicId" },
-                values: new object[] { 1, "", false, 1 });
+                values: new object[] { 1, "group1", false, 1 });
 
             migrationBuilder.InsertData(
                 table: "Partitions",
                 columns: new[] { "Id", "IsDeleted", "TopicId" },
-                values: new object[] { 1, false, 1 });
+                values: new object[,]
+                {
+                    { 1, false, 1 },
+                    { 2, false, 1 }
+                });
 
             migrationBuilder.InsertData(
                 table: "ConsumerGroupOffsets",
                 columns: new[] { "Id", "ConsumerGroupId", "IsDeleted", "PartitionId" },
-                values: new object[] { 1, 1, false, 1 });
+                values: new object[,]
+                {
+                    { 1, 1, false, 1 },
+                    { 2, 1, false, 2 }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ConsumerPartition_PartitionsId",
@@ -73,6 +91,11 @@ namespace Infrastructure.DataBase.Migrations
                 keyValue: 1);
 
             migrationBuilder.DeleteData(
+                table: "ConsumerGroupOffsets",
+                keyColumn: "Id",
+                keyValue: 2);
+
+            migrationBuilder.DeleteData(
                 table: "ConsumerGroups",
                 keyColumn: "Id",
                 keyValue: 1);
@@ -83,9 +106,24 @@ namespace Infrastructure.DataBase.Migrations
                 keyValue: 1);
 
             migrationBuilder.DeleteData(
+                table: "Partitions",
+                keyColumn: "Id",
+                keyValue: 2);
+
+            migrationBuilder.DeleteData(
                 table: "Topics",
                 keyColumn: "Id",
                 keyValue: 1);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Key",
+                table: "Messages",
+                type: "text",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
         }
     }
 }

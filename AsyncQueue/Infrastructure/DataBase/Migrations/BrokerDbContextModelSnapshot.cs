@@ -83,7 +83,7 @@ namespace Infrastructure.DataBase.Migrations
                         new
                         {
                             Id = 1,
-                            ConsumerGroupName = "",
+                            ConsumerGroupName = "group1",
                             IsDeleted = false,
                             TopicId = 1
                         });
@@ -156,6 +156,14 @@ namespace Infrastructure.DataBase.Migrations
                             IsDeleted = false,
                             Offset = 0,
                             PartitionId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ConsumerGroupId = 1,
+                            IsDeleted = false,
+                            Offset = 0,
+                            PartitionId = 2
                         });
                 });
 
@@ -169,7 +177,6 @@ namespace Infrastructure.DataBase.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Key")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("PartitionId")
@@ -219,6 +226,12 @@ namespace Infrastructure.DataBase.Migrations
                             Id = 1,
                             IsDeleted = false,
                             TopicId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsDeleted = false,
+                            TopicId = 1
                         });
                 });
 
@@ -265,7 +278,7 @@ namespace Infrastructure.DataBase.Migrations
                         {
                             Id = 1,
                             IsDeleted = false,
-                            TopicName = ""
+                            TopicName = "topic1"
                         });
                 });
 

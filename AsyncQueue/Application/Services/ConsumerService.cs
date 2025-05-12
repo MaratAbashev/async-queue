@@ -36,15 +36,19 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
             await consumerRepository.AddAsync(consumer);
 
             var partitionsWithConsumers = context.Partitions
-                .Include(p => p.Consumers);
+                .Include(p => p.Consumers)
+                .AsEnumerable();
             
-            var freePartition = await partitionsWithConsumers
-                .FirstOrDefaultAsync(p =>
+            var freePartitions = partitionsWithConsumers
+                .Where(p =>
                     p.Consumers != null && (p.Consumers.All(c => c.ConsumerGroupId != consumerGroup.Id) || p.Consumers.Count == 0));
             
-            if (freePartition != null)
+            if (freePartitions.Count() != 0)
             {
-                freePartition.Consumers?.Add(consumer);
+                foreach (var partition in freePartitions)
+                {
+                    partition.Consumers.Add(consumer);
+                }
                 await context.SaveChangesAsync();
                 return new ConsumerRegisterResponse
                 {
@@ -53,7 +57,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 };
             }
             
-            freePartition = partitionsWithConsumers
+            var freePartition = partitionsWithConsumers
                 .Where(p => p.Consumers != null && p.Consumers.Any(c => c.ConsumerGroupId == consumerGroup.Id))
                 .ToLookup(p => p.Consumers.Count)
                 .FirstOrDefault(group => group.Count() > 1)
@@ -112,7 +116,8 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 .ThenInclude(p => p.Messages)
                 .ThenInclude(m => m.ConsumerGroupMessageStatuses)
                 .Where(c => c.Id == consumerId)
-                .SelectMany(c => c.Partitions);
+                .SelectMany(c => c.Partitions)
+                .AsEnumerable();
 
             if (!consumerPartitions.Any())
             {
@@ -133,7 +138,8 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 .Skip(offset)
                 .Where(m => !m.IsDeleted && m.ConsumerGroupMessageStatuses
                     .First(cgms => cgms.ConsumerGroupId == consumerGroupId).Status == MessageStatus.Pending)
-                .Take(batchSize);
+                .Take(batchSize)
+                .ToList();
             
             var validMessages = new List<Message>();
             foreach (var message in messages)
@@ -149,7 +155,12 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 validMessages.Add(message);
             }
             await context.SaveChangesAsync();
-            var newOffset = validMessages.First().PartitionNumber;
+            
+            var currentOffset = context.ConsumerGroupOffsets
+                .First(c => c.ConsumerGroupId == consumerGroupId && 
+                            c.PartitionId == partition.Id);
+            
+            var newOffset = validMessages.FirstOrDefault()?.PartitionNumber ?? currentOffset.Offset;
 
             return new ConsumerPollResponse
             {
@@ -161,7 +172,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                     .ToList(),
                 Offset = newOffset,
                 ProcessingStatus = ProcessingStatus.Success,
-                ValueType = validMessages.First().ValueType,
+                ValueType = validMessages.FirstOrDefault()?.ValueType,
                 PartitionId = partition.Id
             };
         }
@@ -188,13 +199,15 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
             
             var messages = context.Messages
                 .Include(m => m.ConsumerGroupMessageStatuses)
-                .Where(m => m.PartitionNumber >= consumerCommitRequest.Offset &&
+                .Where(m => m.PartitionId == consumerCommitRequest.PartitionId && 
+                            m.PartitionNumber >= consumerCommitRequest.Offset &&
                             m.PartitionNumber <= consumerCommitRequest.Offset + consumerCommitRequest.BatchSize);
             
             var processedMessages = messages
                 .Take(consumerCommitRequest.SuccessProcessedMessagesCount ?? consumerCommitRequest.BatchSize);
             
             var invalidMessages = messages
+                .AsEnumerable()
                 .Except(processedMessages);
 
             foreach (var message in invalidMessages)
@@ -216,14 +229,6 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
             if (consumerCommitRequest.Offset == currentConsumerGroupOffset.Offset)
             {
                 currentConsumerGroupOffset.Offset = consumerCommitRequest.Offset + consumerCommitRequest.BatchSize;
-            }
-            else if (consumerCommitRequest.Offset > currentConsumerGroupOffset.Offset)
-            {
-                return false;
-            }
-            else
-            {
-                return false;
             }
             await context.SaveChangesAsync();
             return true;
