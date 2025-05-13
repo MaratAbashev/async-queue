@@ -12,5 +12,6 @@ public class Message: IEntity<Guid>
     public Partition Partition { get; set; }
     public List<ConsumerGroupMessageStatus> ConsumerGroupMessageStatuses { get; set; }
     public Guid Id { get; set; }
+    public DateTime CreatedAt { get; set; }
     public bool IsDeleted { get; set; }
 }

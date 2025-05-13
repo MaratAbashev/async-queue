@@ -96,6 +96,7 @@ public class ProducerService(
             Key = message.Key,
             ValueType = message.ValueType,
             ValueJson = message.ValueJson,
+            CreatedAt = DateTime.UtcNow,
         });
 
         var consumerGroups = await consumerGroupRepository

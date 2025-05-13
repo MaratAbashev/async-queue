@@ -135,6 +135,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 .First(cgo => cgo.Partition.Id == partition!.Id).Offset;
 
             var messages = partition!.Messages
+                .OrderBy(m => m.PartitionNumber)
                 .Skip(offset)
                 .Where(m => !m.IsDeleted && m.ConsumerGroupMessageStatuses
                     .First(cgms => cgms.ConsumerGroupId == consumerGroupId).Status == MessageStatus.Pending)
