@@ -17,7 +17,8 @@ public class ProducerService(
     {
         var producer = new Producer
         {
-            Id = registerRequest.ProducerId
+            Id = registerRequest.ProducerId,
+            CurrentSequenceNumber = 0
         };
         try
         {
@@ -128,9 +129,8 @@ public class ProducerService(
         }
         else
         {
-            partitionId = groupMessagesByPartitionId.Values
-                .Select(messages => messages.Count())
-                .Min();
+            partitionId = groupMessagesByPartitionId
+                .MinBy(pair => pair.Value.Count()).Key;
         }
         var partitionNumber = groupMessagesByPartitionId[partitionId].Count();
         

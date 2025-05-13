@@ -16,5 +16,9 @@ public class ConsumerConfiguration: IEntityTypeConfiguration<Consumer>
             .WithMany(cg => cg.Consumers)
             .HasForeignKey(c => c.ConsumerGroupId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasMany(c => c.Partitions)
+            .WithMany(p => p.Consumers);
     }
 }

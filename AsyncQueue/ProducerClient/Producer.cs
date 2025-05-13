@@ -78,7 +78,7 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
         Interlocked.Increment(ref _sequenceNumber);
         var producerMessage = new ProducerMessage
         {
-            Key = JsonSerializer.Serialize(message.Key),
+            Key = typeof(TKey) == typeof(Ignore) ? null: JsonSerializer.Serialize(message.Key),
             ValueType = message.Payload.GetType().Name,
             ValueJson = JsonSerializer.Serialize(message.Payload),
         };
@@ -107,15 +107,14 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
                 {
                     return;
                 }
+                throw new Exception("Broker response: " + brokerResponse?.Reason);
             }
+            throw new Exception($"SendAsync failed with http status code {result.StatusCode}");
         }
-        catch (HttpRequestException ex)
+        catch(Exception )
         {
-            Console.WriteLine(ex.Message);
+            Interlocked.Decrement(ref _sequenceNumber);
         }
-        
-        Interlocked.Decrement(ref _sequenceNumber);
-        throw new Exception("Failed to send message");
     }
     
     public void Dispose()

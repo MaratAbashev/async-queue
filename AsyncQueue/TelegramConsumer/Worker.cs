@@ -20,11 +20,11 @@ public class Worker(ITelegramBotService telegramBotService, IConsumerClient<stri
                     continue;
                 }
 
-                foreach (var message in result)
+                foreach (var message in result.MessagesPayload)
                 {
-                    await telegramBotService.SendMessageAsync(message.Payload!, stoppingToken);
-                    await consumerClient.CommitOffset(message.PartitionId, message.Offset, stoppingToken);
+                    await telegramBotService.SendMessageAsync(message!, stoppingToken);
                 }
+                await consumerClient.CommitOffset(result.PartitionId, result.Offset, result.MessagesPayload.Count,result.MessagesPayload.Count,stoppingToken);
                 await Task.Delay(2000, stoppingToken);
             }
             catch (OperationCanceledException)

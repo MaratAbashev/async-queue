@@ -3,6 +3,7 @@ using System;
 using Infrastructure.DataBase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.DataBase.Migrations
 {
     [DbContext(typeof(BrokerDbContext))]
-    partial class BrokerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250512134742_Third")]
+    partial class Third
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,6 +81,15 @@ namespace Infrastructure.DataBase.Migrations
                     b.HasIndex("TopicId");
 
                     b.ToTable("ConsumerGroups");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ConsumerGroupName = "group1",
+                            IsDeleted = false,
+                            TopicId = 1
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.ConsumerGroupMessageStatus", b =>
@@ -138,6 +150,24 @@ namespace Infrastructure.DataBase.Migrations
                     b.HasIndex("PartitionId");
 
                     b.ToTable("ConsumerGroupOffsets");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ConsumerGroupId = 1,
+                            IsDeleted = false,
+                            Offset = 0,
+                            PartitionId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ConsumerGroupId = 1,
+                            IsDeleted = false,
+                            Offset = 0,
+                            PartitionId = 2
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Message", b =>
@@ -192,6 +222,20 @@ namespace Infrastructure.DataBase.Migrations
                     b.HasIndex("TopicId");
 
                     b.ToTable("Partitions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDeleted = false,
+                            TopicId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsDeleted = false,
+                            TopicId = 1
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Producer", b =>
@@ -231,6 +275,14 @@ namespace Infrastructure.DataBase.Migrations
                         .IsUnique();
 
                     b.ToTable("Topics");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDeleted = false,
+                            TopicName = "topic1"
+                        });
                 });
 
             modelBuilder.Entity("ConsumerPartition", b =>

@@ -20,11 +20,11 @@ public class Worker(IDbConsumerRepository consumerRepository, IConsumerClient<st
                     await Task.Delay(1000, stoppingToken);
                     continue;
                 }
-                foreach (var message in result)
+                foreach (var message in result.MessagesPayload)
                 {
-                    await consumerRepository.AddMessageAsync(message.Payload!, stoppingToken);
-                    await consumerClient.CommitOffset(message.PartitionId, message.Offset, stoppingToken);
+                    await consumerRepository.AddMessageAsync(message!, stoppingToken);
                 }
+                await consumerClient.CommitOffset(result.PartitionId, result.Offset, result.MessagesPayload.Count, result.MessagesPayload.Count, stoppingToken);
                 await Task.Delay(2000, stoppingToken);
             }
             catch (OperationCanceledException)
