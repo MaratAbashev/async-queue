@@ -1,21 +1,15 @@
 ﻿services:
-  consumer_service_db:
-    image: consumer_service_db
+  background-services:
+    image: background-services
     build:
       context: .
-      dockerfile: DatabaseConsumer/Dockerfile
+      dockerfile: BackgroundBrokerServices/Dockerfile
     ports:
-      - "5164:8080"
+      - "5166:8080"
     env_file:
       - .env
-    environment:
-      POSTGRES_HOST: ${POSTGRES_HOST_CONSUMER}
-      POSTGRES_USER: ${POSTGRES_USER_CONSUMER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_CONSUMER}
-      POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
     depends_on:
-      - db-consumer
-      
+      - db-hangfire
       
   broker-api:
     image: broker-api
@@ -58,20 +52,16 @@
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_CONSUMER}
       POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
       
-  consumer-bot:
-    image: consumer-bot
-    build:
-      context: .
-      dockerfile: TelegramConsumer/Dockerfile
+  db-hangfire:
+    image: postgres:latest
+    container_name: db-hangfire
     ports:
-      - "5165:8080"
+      - "5440:5432"
     env_file:
       - .env
-    depends_on:
-      - broker-api
   
-  console-producer:
-    image: console-producer
+  producer-console:
+    image: producer-console
     build:
       context: .
       dockerfile: ConsoleProducer/Dockerfile
@@ -79,13 +69,44 @@
       - .env
     depends_on:
       - broker-api
-  console-consumer:
-    image: console-consumer
+      
+  consumer-db:
+    image: consumer-db
+    build:
+      context: .
+      dockerfile: DbConsumer/Dockerfile
+    ports:
+      - "5164:8080"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST_CONSUMER}
+      POSTGRES_USER: ${POSTGRES_USER_CONSUMER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_CONSUMER}
+      POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
+    depends_on:
+      - db-consumer
+      - broker-api
+      
+  consumer-console:
+    image: consumer-console
     build:
       context: .
       dockerfile: ConsoleConsumer/Dockerfile
     ports:
       - "51488:8080"
+    env_file:
+      - .env
+    depends_on:
+      - broker-api
+      
+  consumer-bot:
+    image: consumer-bot
+    build:
+      context: .
+      dockerfile: BotConsumer/Dockerfile
+    ports:
+      - "5165:8080"
     env_file:
       - .env
     depends_on:

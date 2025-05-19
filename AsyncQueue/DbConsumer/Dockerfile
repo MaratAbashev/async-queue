@@ -7,19 +7,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ConsoleConsumer/ConsoleConsumer.csproj", "ConsoleConsumer/"]
+COPY ["DbConsumer/DbConsumer.csproj", "DbConsumer/"]
 COPY ["ConsumerClient/ConsumerClient.csproj", "ConsumerClient/"]
 COPY ["Domain/Domain.csproj", "Domain/"]
-RUN dotnet restore "ConsoleConsumer/ConsoleConsumer.csproj"
+RUN dotnet restore "DbConsumer/DbConsumer.csproj"
 COPY . .
-WORKDIR "/src/ConsoleConsumer"
-RUN dotnet build "ConsoleConsumer.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/DbConsumer"
+RUN dotnet build "DbConsumer.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "ConsoleConsumer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "DbConsumer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ConsoleConsumer.dll"]
+ENTRYPOINT ["dotnet", "DbConsumer.dll"]

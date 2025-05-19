@@ -29,8 +29,11 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
         var consumer = new Consumer
         {
             Id = Guid.NewGuid(),
-            ConsumerGroupId = consumerGroup.Id
+            ConsumerGroupId = consumerGroup.Id,
+            Address = consumerRegisterRequest.Address,
+            RegisteredAt = DateTime.UtcNow,
         };
+        
         try
         {
             await consumerRepository.AddAsync(consumer);
@@ -73,13 +76,13 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 };
             }
             
-            freePartition.Consumers?.Add(consumer);
             var previousConsumer = freePartition.Consumers!
                 .FirstOrDefault(c => c.ConsumerGroupId == consumerGroup.Id);
             if (previousConsumer != null)
             {
                 freePartition.Consumers?.Remove(previousConsumer);
             }
+            freePartition.Consumers?.Add(consumer);
             await context.SaveChangesAsync();
             
             return new ConsumerRegisterResponse
@@ -153,6 +156,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                     continue;
                 }
                 messageStatus.Status = MessageStatus.Processing;
+                messageStatus.ConsumerId = consumerId;
                 validMessages.Add(message);
             }
             await context.SaveChangesAsync();

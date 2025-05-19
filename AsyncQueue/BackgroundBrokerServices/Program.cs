@@ -1,0 +1,36 @@
+using BackgroundBrokerServices.BackgroundJobs;
+using Domain.Abstractions.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Infrastructure.Consumers.Services;
+using Infrastructure.DataBase;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddEnvironmentVariables();
+
+builder.Services.AddDbContext<BrokerDbContext>();
+
+builder.Services.AddSingleton<ConsumerHealthCheckJob>();
+builder.Services.AddSingleton<UnprocessedMessagesHandleJob>();
+builder.Services.AddSingleton<IHealthCheckService, HealthCheckService>();
+
+builder.Services.AddHangfire(configuration => 
+    configuration.UsePostgreSqlStorage(options => 
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("Hangfire"))));
+
+builder.Services.AddHangfireServer();
+
+var app = builder.Build();
+
+app.UseHangfireDashboard();
+
+RecurringJob.AddOrUpdate("consumer-health-check",
+    () => app.Services.GetService<ConsumerHealthCheckJob>()!.ExecuteHealthCheck(),
+    Cron.Minutely);
+
+RecurringJob.AddOrUpdate("unprocessed-messages-handle",
+    () => app.Services.GetService<UnprocessedMessagesHandleJob>()!.ExecuteUnprocessedMessagesHandle(),
+    Cron.Minutely);
+
+app.Run();
