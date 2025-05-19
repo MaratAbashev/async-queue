@@ -1,23 +1,11 @@
-using ConsumerClient;
+using ConsoleConsumer;
 using ConsumerClient.Abstractions;
-using Telegram.Bot;
-using TelegramConsumer;
-using TelegramConsumer.Abstractions;
-using TelegramConsumer.Services;
+using ConsumerClient;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddHostedService<Worker>();
 int batchSize = 5;
-builder.Services.AddSingleton<ITelegramBotClient, TelegramBotClient>(_ =>
-{
-    var token = builder.Configuration["TelegramBotClientOptions:Token"];
-    if (string.IsNullOrEmpty(token))
-    {
-        throw new NullReferenceException("Please provide a valid token");
-    }
-    return new TelegramBotClient(token);
-});
 builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_ =>
 {
     var brokerUrl = builder.Configuration["MessageBroker:Host"];
@@ -33,8 +21,6 @@ builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_
     }
     return new ConsumerClient<string>(consumerGroup, brokerUrl, batchSize);
 });
-builder.Services.AddSingleton<ITelegramBotService, TelegramBotService>();
-
 
 var host = builder.Build();
 host.Run();

@@ -36,6 +36,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -86,5 +87,7 @@ partitionEndpointGroup.MapPost("/add/{topicName}",
 partitionEndpointGroup.MapDelete("/delete/{partitionId:int}", 
     async (int partitionId, IPartitionService partitionService) => 
         await partitionService.DeletePartition(partitionId));
+
+await app.RunAsync();
 
 app.Run();

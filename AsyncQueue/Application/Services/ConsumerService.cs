@@ -135,6 +135,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 .First(cgo => cgo.Partition.Id == partition!.Id).Offset;
 
             var messages = partition!.Messages
+                .OrderBy(m => m.PartitionNumber)
                 .Skip(offset)
                 .Where(m => !m.IsDeleted && m.ConsumerGroupMessageStatuses
                     .First(cgms => cgms.ConsumerGroupId == consumerGroupId).Status == MessageStatus.Pending)
@@ -201,7 +202,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 .Include(m => m.ConsumerGroupMessageStatuses)
                 .Where(m => m.PartitionId == consumerCommitRequest.PartitionId && 
                             m.PartitionNumber >= consumerCommitRequest.Offset &&
-                            m.PartitionNumber <= consumerCommitRequest.Offset + consumerCommitRequest.BatchSize);
+                            m.PartitionNumber < consumerCommitRequest.Offset + consumerCommitRequest.BatchSize);
             
             var processedMessages = messages
                 .Take(consumerCommitRequest.SuccessProcessedMessagesCount ?? consumerCommitRequest.BatchSize);
@@ -226,7 +227,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 .First(c => c.ConsumerGroupId == consumerGroupId && 
                                      c.PartitionId == consumerCommitRequest.PartitionId);
             
-            if (consumerCommitRequest.Offset == currentConsumerGroupOffset.Offset)
+            if (consumerCommitRequest.Offset >= currentConsumerGroupOffset.Offset)
             {
                 currentConsumerGroupOffset.Offset = consumerCommitRequest.Offset + consumerCommitRequest.BatchSize;
             }

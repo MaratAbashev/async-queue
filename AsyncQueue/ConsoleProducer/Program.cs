@@ -15,5 +15,4 @@ while (true)
         Payload = i++.ToString()
     };
     await producer.SendAsync(topic, message);
-    await Task.Delay(1000);
 }
