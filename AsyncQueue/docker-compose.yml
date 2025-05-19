@@ -59,6 +59,10 @@
       - "5440:5432"
     env_file:
       - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_HANGFIRE}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_HANGFIRE}
+      POSTGRES_DB: ${POSTGRES_DB_HANGFIRE}
   
   producer-console:
     image: producer-console
