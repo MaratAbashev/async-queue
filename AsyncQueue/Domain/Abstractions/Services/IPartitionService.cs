@@ -1,6 +1,6 @@
 using Domain.Entities;
 
-namespace Application.Services;
+namespace Domain.Abstractions.Services;
 
 public interface IPartitionService
 {

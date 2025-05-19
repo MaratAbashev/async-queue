@@ -49,7 +49,11 @@ public class PartitionRepository(BrokerDbContext context): Repository<Partition,
             consumer?.Partitions!.Add(partition);
         }
         await context.SaveChangesAsync(cancellationToken);
-        return partition;
+        return new Partition
+        {
+            Id = partition.Id,
+            TopicId = topic.Id
+        };
     }
 
     public override async Task DeleteAsync(Expression<Func<Partition, bool>> predicate)
