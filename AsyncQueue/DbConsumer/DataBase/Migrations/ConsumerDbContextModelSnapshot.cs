@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace DatabaseConsumer.Migrations
+namespace DbConsumer.DataBase.Migrations
 {
     [DbContext(typeof(ConsumerDbContext))]
     partial class ConsumerDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace DatabaseConsumer.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DatabaseConsumer.Models.Entities.MessageEntity", b =>
+            modelBuilder.Entity("DbConsumer.Models.Entities.MessageEntity", b =>
                 {
                     b.Property<int>("MessageId")
                         .ValueGeneratedOnAdd()

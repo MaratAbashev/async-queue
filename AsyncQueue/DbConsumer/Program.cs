@@ -27,9 +27,10 @@ builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_
 });
 builder.Services.AddDbContext<ConsumerDbContext>(contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddSingleton<IDbConsumerRepository, DbConsumerRepository>();
-var host = builder.Build();
 
-using var scope = host.Services.CreateScope();
+var app = builder.Build();
+
+using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<ConsumerDbContext>();
 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 try
@@ -40,7 +41,5 @@ catch (Exception ex)
 {
     logger.LogError(ex, ex.Message);
 }
-
-var app = builder.Build();
 
 app.Run();
