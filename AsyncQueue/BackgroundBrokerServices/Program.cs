@@ -1,6 +1,7 @@
 using BackgroundBrokerServices.BackgroundJobs;
 using Domain.Abstractions.Services;
 using Hangfire;
+using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using Infrastructure.Consumers.Services;
 using Infrastructure.DataBase;
@@ -23,7 +24,10 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new MyAuthorizationFilter() }
+});
 
 RecurringJob.AddOrUpdate("consumer-health-check",
     () => app.Services.GetService<ConsumerHealthCheckJob>()!.ExecuteHealthCheck(),
@@ -34,3 +38,12 @@ RecurringJob.AddOrUpdate("unprocessed-messages-handle",
     Cron.Minutely);
 
 app.Run();
+
+public class MyAuthorizationFilter : IDashboardAuthorizationFilter
+{
+    public bool Authorize(DashboardContext context)
+    {
+        // Разрешаем все запросы
+        return true;
+    }
+}

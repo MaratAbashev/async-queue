@@ -15,6 +15,7 @@
       POSTGRES_DB: ${POSTGRES_DB_HANGFIRE}
     depends_on:
       - db-hangfire
+      - broker-api
       
   broker-api:
     image: broker-api
