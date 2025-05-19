@@ -19,6 +19,8 @@ builder.Services.Configure<BrokerStartingData>(builder.Configuration.GetSection(
 builder.Services.AddDbContext<BrokerDbContext>();
 builder.Services.AddScoped<IProducerService, ProducerService>();
 builder.Services.AddScoped<IConsumerService, ConsumerService>();
+builder.Services.AddScoped<ITopicService, TopicService>();
+builder.Services.AddScoped<IPartitionService, PartitionService>();
 builder.Services.AddScoped<IProducerRepository, ProducerRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConsumerGroupRepository, ConsumerGroupRepository>();
@@ -26,6 +28,7 @@ builder.Services.AddScoped<ITopicRepository, TopicRepository>();
 builder.Services.AddScoped<IConsumerGroupMessageStatusRepository, ConsumerGroupMessageStatusRepository>();
 builder.Services.AddScoped<IConsumerGroupOffsetRepository, ConsumerGroupOffsetRepository>();
 builder.Services.AddScoped<IConsumerRepository, ConsumerRepository>();
+builder.Services.AddScoped<IPartitionRepository, PartitionRepository>();
 
 builder.Services.AddHostedService<DbInitializerService>();
 
@@ -68,6 +71,20 @@ consumerEndpointGroup.MapPost("/{consumerId}/commit", async (Guid consumerId, Co
 
 var topicEndpointGroup = app.MapGroup("/topic");
 
-topicEndpointGroup.MapPost("/add/{topicName}", async (string topicName, ITopicService topicService) => await topicService.AddNewTopic(topicName));
-topicEndpointGroup.MapDelete("/delete/{topicName}", async (string topicName, ITopicService topicService) => (await topicService.RemoveTopic(topicName)) ? Results.Ok() : Results.Problem());
+topicEndpointGroup.MapPost("/add/{topicName}", 
+    async (string topicName, ITopicService topicService) => 
+        await topicService.AddNewTopic(topicName));
+topicEndpointGroup.MapDelete("/delete/{topicName}", 
+    async (string topicName, ITopicService topicService) => 
+        await topicService.RemoveTopic(topicName) ? Results.Ok() : Results.Problem());
+
+var partitionEndpointGroup = app.MapGroup("/partition");
+
+partitionEndpointGroup.MapPost("/add/{topicName}", 
+    async (string topicName, IPartitionService partitionService) => 
+        await partitionService.AddPartition(topicName));
+partitionEndpointGroup.MapDelete("/delete/{partitionId:int}", 
+    async (int partitionId, IPartitionService partitionService) => 
+        await partitionService.DeletePartition(partitionId));
+
 app.Run();
