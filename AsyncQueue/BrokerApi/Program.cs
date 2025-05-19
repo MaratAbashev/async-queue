@@ -19,6 +19,8 @@ builder.Services.Configure<BrokerStartingData>(builder.Configuration.GetSection(
 builder.Services.AddDbContext<BrokerDbContext>();
 builder.Services.AddScoped<IProducerService, ProducerService>();
 builder.Services.AddScoped<IConsumerService, ConsumerService>();
+builder.Services.AddScoped<ITopicService, TopicService>();
+builder.Services.AddScoped<IPartitionService, PartitionService>();
 builder.Services.AddScoped<IProducerRepository, ProducerRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConsumerGroupRepository, ConsumerGroupRepository>();
@@ -26,58 +28,22 @@ builder.Services.AddScoped<ITopicRepository, TopicRepository>();
 builder.Services.AddScoped<IConsumerGroupMessageStatusRepository, ConsumerGroupMessageStatusRepository>();
 builder.Services.AddScoped<IConsumerGroupOffsetRepository, ConsumerGroupOffsetRepository>();
 builder.Services.AddScoped<IConsumerRepository, ConsumerRepository>();
+builder.Services.AddScoped<IPartitionRepository, PartitionRepository>();
 
 builder.Services.AddHostedService<DbInitializerService>();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
-// var configuration = app.Configuration;
-// using var scope = app.Services.CreateScope();
-// var context = scope.ServiceProvider.GetRequiredService<BrokerDbContext>();
-// var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-// try
-// {
-//     context.Database.Migrate();
-//     // context.Topics.Add(new Topic
-//     // {
-//     //     TopicName = configuration["MessageBroker:Topic"],
-//     // });
-//     // context.SaveChanges();
-//     // var topicId = context.Topics.First().Id;
-//     // int.TryParse(configuration["MessageBroker:PartitionCount"], out int partitionCount);
-//     // for (int i = 0; i < partitionCount; i++)
-//     // {
-//     //     context.Partitions.Add(new Partition
-//     //     {
-//     //         TopicId = topicId,
-//     //     });
-//     // }
-//     //
-//     // context.ConsumerGroups.Add(new ConsumerGroup
-//     // {
-//     //     TopicId = topicId,
-//     //     ConsumerGroupName = configuration["MessageBroker:ConsumerGroup"],
-//     // });
-//     // context.SaveChanges();
-//     // var partitionIds = context.Partitions.Select(p => p.Id).ToList();
-//     // var consumerGroupId = context.ConsumerGroups.First().Id;
-//     // foreach (var partitionId in partitionIds)
-//     // {
-//     //     context.ConsumerGroupOffsets.Add(new ConsumerGroupOffset
-//     //     {
-//     //         PartitionId = partitionId,
-//     //         Offset = 0,
-//     //         ConsumerGroupId = consumerGroupId
-//     //     });
-//     // }
-//     //
-//     // context.SaveChanges();
-// }
-// catch(Exception ex)
-// {
-//     logger.LogCritical(ex.Message + "qqqqq");
-// }
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json",
+        $"{builder.Environment.ApplicationName} v1"));
+}
 
 var producerGroup = app.MapGroup("/producer");
 
@@ -103,6 +69,24 @@ consumerEndpointGroup.MapGet("/{consumerId}/{batchSize}/poll", async (Guid consu
 consumerEndpointGroup.MapPost("/{consumerId}/commit", async (Guid consumerId, ConsumerCommitRequest request, IConsumerService consumerService) => await consumerService.TryCommitMessages(consumerId, request)?
     Results.Ok():
     Results.Conflict()); //поработать со статус кодами
+
+var topicEndpointGroup = app.MapGroup("/topic");
+
+topicEndpointGroup.MapPost("/add/{topicName}", 
+    async (string topicName, ITopicService topicService) => 
+        await topicService.AddNewTopic(topicName));
+topicEndpointGroup.MapDelete("/delete/{topicName}", 
+    async (string topicName, ITopicService topicService) => 
+        await topicService.RemoveTopic(topicName) ? Results.Ok() : Results.Problem());
+
+var partitionEndpointGroup = app.MapGroup("/partition");
+
+partitionEndpointGroup.MapPost("/add/{topicName}", 
+    async (string topicName, IPartitionService partitionService) => 
+        await partitionService.AddPartition(topicName));
+partitionEndpointGroup.MapDelete("/delete/{partitionId:int}", 
+    async (int partitionId, IPartitionService partitionService) => 
+        await partitionService.DeletePartition(partitionId));
 
 await app.RunAsync();
 
