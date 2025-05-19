@@ -30,6 +30,7 @@ builder.Services.AddScoped<IConsumerRepository, ConsumerRepository>();
 builder.Services.AddHostedService<DbInitializerService>();
 
 var app = builder.Build();
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
 // var configuration = app.Configuration;
 // using var scope = app.Services.CreateScope();
@@ -102,5 +103,7 @@ consumerEndpointGroup.MapGet("/{consumerId}/{batchSize}/poll", async (Guid consu
 consumerEndpointGroup.MapPost("/{consumerId}/commit", async (Guid consumerId, ConsumerCommitRequest request, IConsumerService consumerService) => await consumerService.TryCommitMessages(consumerId, request)?
     Results.Ok():
     Results.Conflict()); //поработать со статус кодами
+
+await app.RunAsync();
 
 app.Run();

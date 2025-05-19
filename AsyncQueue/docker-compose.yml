@@ -79,3 +79,14 @@
       - .env
     depends_on:
       - broker-api
+  console-consumer:
+    image: console-consumer
+    build:
+      context: .
+      dockerfile: ConsoleConsumer/Dockerfile
+    ports:
+      - "51488:8080"
+    env_file:
+      - .env
+    depends_on:
+      - broker-api
