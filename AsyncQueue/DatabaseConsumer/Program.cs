@@ -12,7 +12,7 @@ int batchSize = 5;
 builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_ =>
 {
     var brokerUrl = builder.Configuration["MessageBroker:Host"];
-    var consumerGroup = builder.Configuration["MessageBroker:ConsumerGroup"];
+    var consumerGroup = builder.Configuration["DataBase:ConsumerGroup"];
     if (string.IsNullOrEmpty(brokerUrl))
     {
         throw new NullReferenceException("Please provide a broker url");

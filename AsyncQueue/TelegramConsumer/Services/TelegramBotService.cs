@@ -23,7 +23,7 @@ public class TelegramBotService(ITelegramBotClient client): ITelegramBotService
 
     public async Task SendMessageAsync(string text, CancellationToken cancellationToken)
     {
-        await client.SendMessage(1840413780, text, cancellationToken: cancellationToken); // тут айди моего с ним чата
+        //await client.SendMessage(1840413780, text, cancellationToken: cancellationToken); // тут айди моего с ним чата
         await client.SendMessage(1126667142, text, cancellationToken: cancellationToken);
     }
 }
