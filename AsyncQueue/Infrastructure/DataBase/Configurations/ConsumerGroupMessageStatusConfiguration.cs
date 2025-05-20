@@ -27,6 +27,12 @@ public class ConsumerGroupMessageStatusConfiguration: IEntityTypeConfiguration<C
             .WithMany(cg => cg.ConsumerGroupMessageStatuses)
             .HasForeignKey(cgms => cgms.ConsumerGroupId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder
+            .HasOne(cgms => cgms.Consumer)
+            .WithMany(cgms => cgms.ConsumerGroupMessageStatuses)
+            .HasForeignKey(cgms => cgms.ConsumerId)
+            .OnDelete(DeleteBehavior.SetNull);
             
     }
 }

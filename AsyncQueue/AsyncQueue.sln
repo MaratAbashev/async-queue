@@ -19,11 +19,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramConsumer", "TelegramConsumer\TelegramConsumer.csproj", "{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackgroundBrokerServices", "BackgroundBrokerServices\BackgroundBrokerServices.csproj", "{6B517DE3-0B01-48D0-8E48-B96DE53DC4B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseConsumer", "DatabaseConsumer\DatabaseConsumer.csproj", "{4431F66C-2A56-46E5-882D-5BB01905D6EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotConsumer", "BotConsumer\BotConsumer.csproj", "{9455B8EB-F0E6-4E5F-82D8-F2159D480190}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleConsumer", "ConsoleConsumer\ConsoleConsumer.csproj", "{7B7F5AB4-D265-4170-93C0-062606845D52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbConsumer", "DbConsumer\DbConsumer.csproj", "{C48E93D4-7447-41A3-9194-DA7B08324D40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleConsumer", "ConsoleConsumer\ConsoleConsumer.csproj", "{8E1CC390-214C-4199-9700-FBD9469DAAF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,17 +61,21 @@ Global
 		{844F3F25-0E03-4126-9520-52CA01B11399}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{844F3F25-0E03-4126-9520-52CA01B11399}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{844F3F25-0E03-4126-9520-52CA01B11399}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F09CF1B-59E3-4FE7-B0E9-7515EEAE9264}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4431F66C-2A56-46E5-882D-5BB01905D6EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4431F66C-2A56-46E5-882D-5BB01905D6EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4431F66C-2A56-46E5-882D-5BB01905D6EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4431F66C-2A56-46E5-882D-5BB01905D6EC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7B7F5AB4-D265-4170-93C0-062606845D52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7B7F5AB4-D265-4170-93C0-062606845D52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7B7F5AB4-D265-4170-93C0-062606845D52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7B7F5AB4-D265-4170-93C0-062606845D52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B517DE3-0B01-48D0-8E48-B96DE53DC4B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B517DE3-0B01-48D0-8E48-B96DE53DC4B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B517DE3-0B01-48D0-8E48-B96DE53DC4B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B517DE3-0B01-48D0-8E48-B96DE53DC4B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9455B8EB-F0E6-4E5F-82D8-F2159D480190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9455B8EB-F0E6-4E5F-82D8-F2159D480190}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9455B8EB-F0E6-4E5F-82D8-F2159D480190}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9455B8EB-F0E6-4E5F-82D8-F2159D480190}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C48E93D4-7447-41A3-9194-DA7B08324D40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C48E93D4-7447-41A3-9194-DA7B08324D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C48E93D4-7447-41A3-9194-DA7B08324D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C48E93D4-7447-41A3-9194-DA7B08324D40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E1CC390-214C-4199-9700-FBD9469DAAF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E1CC390-214C-4199-9700-FBD9469DAAF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E1CC390-214C-4199-9700-FBD9469DAAF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E1CC390-214C-4199-9700-FBD9469DAAF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

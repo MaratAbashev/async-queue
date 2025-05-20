@@ -43,11 +43,17 @@ namespace Infrastructure.DataBase.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
                     b.Property<int>("ConsumerGroupId")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -91,6 +97,9 @@ namespace Infrastructure.DataBase.Migrations
                     b.Property<int>("ConsumerGroupId")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("ConsumerId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -103,6 +112,8 @@ namespace Infrastructure.DataBase.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ConsumerGroupId");
+
+                    b.HasIndex("ConsumerId");
 
                     b.HasIndex("MessageId");
 
@@ -281,11 +292,18 @@ namespace Infrastructure.DataBase.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Consumer", "Consumer")
+                        .WithMany("ConsumerGroupMessageStatuses")
+                        .HasForeignKey("ConsumerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Domain.Entities.Message", "Message")
                         .WithMany("ConsumerGroupMessageStatuses")
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Consumer");
 
                     b.Navigation("ConsumerGroup");
 
@@ -331,6 +349,11 @@ namespace Infrastructure.DataBase.Migrations
                         .IsRequired();
 
                     b.Navigation("Topic");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Consumer", b =>
+                {
+                    b.Navigation("ConsumerGroupMessageStatuses");
                 });
 
             modelBuilder.Entity("Domain.Entities.ConsumerGroup", b =>
