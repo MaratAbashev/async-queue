@@ -1,19 +1,33 @@
 using Application.Services;
 using Domain.Abstractions.Repositories;
 using Domain.Abstractions.Services;
-using Domain.Entities;
 using Domain.Models.ConsumersDtos;
 using Domain.Models.ProducersDtos;
 using Infrastructure.DataBase;
 using Infrastructure.DataBase.Options;
 using Infrastructure.DataBase.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using Serilog;
+using Serilog.Sinks.Elasticsearch;
 using IConsumerService = Domain.Abstractions.Services.IConsumerService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+
+var logger = new LoggerConfiguration()
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithProcessId()
+    .Enrich.WithThreadId()
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(builder.Configuration["ELASTICSEARCH_HOSTS"]!))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = "broker-api-logs-{0:yyyy.MM.dd}"
+    })
+    .CreateLogger();
+
+Log.Logger = logger;
+
 builder.Services.Configure<BrokerStartingData>(builder.Configuration.GetSection(nameof(BrokerStartingData)));
 
 builder.Services.AddDbContext<BrokerDbContext>();
@@ -34,6 +48,8 @@ builder.Services.AddHostedService<DbInitializerService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Host.UseSerilog();
 
 var app = builder.Build();
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();

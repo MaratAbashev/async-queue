@@ -33,6 +33,7 @@
       POSTGRES_DB: ${POSTGRES_DB_API}
     depends_on:
       - db-broker-api
+      - kibana
 
   db-broker-api:
     image: postgres:latest
@@ -90,3 +91,27 @@
       - .env
     depends_on:
       - broker-api
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
+    depends_on:
+      - elasticsearch
+
+volumes:
+  esdata:
