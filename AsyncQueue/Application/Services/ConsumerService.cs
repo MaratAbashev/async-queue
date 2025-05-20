@@ -86,7 +86,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
             }
             await context.SaveChangesAsync();
             logger.LogInformation($"Consumer {consumer.Id} " +
-                                  $"added to group {consumerGroup.ConsumerGroupName}" +
+                                  $"added to group {consumerGroup.ConsumerGroupName} " +
                                   $"to partition {freePartition.Id}");
             return new ConsumerRegisterResponse
             {

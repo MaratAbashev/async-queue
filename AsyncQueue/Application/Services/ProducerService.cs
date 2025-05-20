@@ -119,8 +119,8 @@ public class ProducerService(
             });
         }
         logger.LogInformation($"Message from producer {sendRequest.ProducerId} " +
-                              $"has been registered to partition {partition.partitionId}" +
-                              $"with sequence {producer.CurrentSequenceNumber}" +
+                              $"has been registered to partition {partition.partitionId} " +
+                              $"with sequence {producer.CurrentSequenceNumber} " +
                               $"at partition number {partition.partitionNumber}",
             message.ValueType, message.ValueJson);
         return new ProducerSendResponse

@@ -15,7 +15,8 @@
       POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
     depends_on:
       - db-consumer
-      
+      - broker-api
+      - console-producer
       
   broker-api:
     image: broker-api
@@ -70,6 +71,7 @@
       - .env
     depends_on:
       - broker-api
+      - console-producer
   
   console-producer:
     image: console-producer
@@ -91,6 +93,7 @@
       - .env
     depends_on:
       - broker-api
+      - console-producer
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
     container_name: elasticsearch
