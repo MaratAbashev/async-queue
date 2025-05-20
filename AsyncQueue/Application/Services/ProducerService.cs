@@ -3,6 +3,7 @@ using Domain.Abstractions.Services;
 using Domain.Entities;
 using Domain.Models;
 using Domain.Models.ProducersDtos;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
@@ -11,7 +12,8 @@ public class ProducerService(
     IMessageRepository messageRepository,
     ITopicRepository topicRepository,
     IConsumerGroupRepository consumerGroupRepository,
-    IConsumerGroupMessageStatusRepository consumerGroupMessageStatusRepository): IProducerService
+    IConsumerGroupMessageStatusRepository consumerGroupMessageStatusRepository,
+    ILogger<ProducerService> logger): IProducerService
 {
     public async Task<ProducerRegistrationResponse> RegisterAsync(ProducerRegistrationRequest registerRequest, CancellationToken cancellationToken = default)
     {
@@ -23,6 +25,7 @@ public class ProducerService(
         try
         {
             var producerResponse = await producerRepository.AddAsync(producer);
+            logger.LogInformation($"Producer {producer.Id} has been added.");
             return new ProducerRegistrationResponse
             {
                 Status = ProcessingStatus.Success
@@ -30,6 +33,7 @@ public class ProducerService(
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, ex.Message);
             return new ProducerRegistrationResponse
             {
                 Status = ProcessingStatus.Wrong,
@@ -44,6 +48,7 @@ public class ProducerService(
             .GetByFilterAsync(p => p.Id == sendRequest.ProducerId);
         if (producer == null)
         {
+            logger.LogError($"Producer {sendRequest.ProducerId} has not been registered.");
             return new ProducerSendResponse
             {
                 Status = ProcessingStatus.Wrong,
@@ -53,6 +58,7 @@ public class ProducerService(
         var lastSequenceNumber = producer.CurrentSequenceNumber;
         if (sendRequest.Sequence == lastSequenceNumber)
         {
+            logger.LogError($"Producer {sendRequest.ProducerId} has already been registered.");
             return new ProducerSendResponse
             {
                 Status = ProcessingStatus.Wrong,
@@ -62,6 +68,7 @@ public class ProducerService(
 
         if (sendRequest.Sequence > lastSequenceNumber + 1)
         {
+            logger.LogError($"Producer {sendRequest.ProducerId} skipped some messages.");
             return new ProducerSendResponse()
             {
                 Status = ProcessingStatus.Wrong,
@@ -71,6 +78,7 @@ public class ProducerService(
 
         if (sendRequest.Sequence < lastSequenceNumber)
         {
+            logger.LogError($"Producer {sendRequest.ProducerId} sent previous message");
             return new ProducerSendResponse()
             {
                 Status = ProcessingStatus.Wrong,
@@ -87,7 +95,6 @@ public class ProducerService(
         var message = sendRequest.Message;
         var messageId = Guid.NewGuid();
         var partition = GetPartitionByMessage(message.Key, groupMessagesByPartitionId);
-
         await messageRepository.AddAsync(new Message
         {
             Id = messageId,
@@ -111,7 +118,11 @@ public class ProducerService(
                 Status = MessageStatus.Pending
             });
         }
-
+        logger.LogInformation($"Message from producer {sendRequest.ProducerId} " +
+                              $"has been registered to partition {partition.partitionId}" +
+                              $"with sequence {producer.CurrentSequenceNumber}" +
+                              $"at partition number {partition.partitionNumber}",
+            message.ValueType, message.ValueJson);
         return new ProducerSendResponse
         {
             Status = ProcessingStatus.Success

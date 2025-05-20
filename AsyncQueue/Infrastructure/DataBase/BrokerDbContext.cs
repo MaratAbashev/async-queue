@@ -44,6 +44,8 @@ public class BrokerDbContext(
     
     private ILoggerFactory CreateLoggerFactory()
     {
-        return LoggerFactory.Create(builder => builder.AddConsole());
+        return LoggerFactory.Create(builder => builder
+            .SetMinimumLevel(LogLevel.Warning)
+            .AddConsole());
     }
 }
