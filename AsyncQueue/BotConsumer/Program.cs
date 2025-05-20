@@ -37,5 +37,5 @@ builder.Services.AddSingleton<IConsumerClient<string>, ConsumerClient<string>>(_
 builder.Services.AddSingleton<ITelegramBotService, TelegramBotService>();
 
 var app = builder.Build();
-
+app.MapGet("/health-check", () => true);
 app.Run();

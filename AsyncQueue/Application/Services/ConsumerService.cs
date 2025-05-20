@@ -37,8 +37,14 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
         try
         {
             await consumerRepository.AddAsync(consumer);
-
+            
+            var consumerTopicId = context.ConsumerGroups
+                .Include(cg => cg.Topic)
+                .First(cg => cg.Id == consumer.ConsumerGroupId)
+                .TopicId;
+            
             var partitionsWithConsumers = context.Partitions
+                .Where(p => p.TopicId == consumerTopicId)
                 .Include(p => p.Consumers)
                 .AsEnumerable();
             

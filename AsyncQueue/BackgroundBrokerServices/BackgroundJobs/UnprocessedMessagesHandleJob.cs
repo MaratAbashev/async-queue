@@ -31,7 +31,8 @@ public class UnprocessedMessagesHandleJob(
             .Include(cgms => cgms.Consumer)
             .Include(cgms => cgms.Message)
             .Where(cgms => cgms.Status == MessageStatus.Processing && cgms.Consumer.IsDeleted)
-            .Select(cgms => cgms.Message);
+            .Select(cgms => cgms.Message)
+            .ToHashSet();
 
         foreach (var message in infinitelyProcessingMessages)
         {
@@ -40,7 +41,21 @@ public class UnprocessedMessagesHandleJob(
         }
         
         //сделать с pending сообщениями
-        var unprocessedPendingMessages = context.ConsumerGroupMessageStatuses;
+        var unprocessedPendingMessages = context.Messages
+            .Include(m => m.ConsumerGroupMessageStatuses)
+            .GroupBy(m => m.PartitionId)
+            .ToDictionary(group => group.Key, group => group
+                .OrderByDescending(m => m.PartitionNumber)
+                .SkipWhile(m => m.ConsumerGroupMessageStatuses.Any(cgms => cgms.Status == MessageStatus.Pending))
+                .Where(m => m.ConsumerGroupMessageStatuses.Any(cgms => cgms.Status == MessageStatus.Pending))
+                .ToList())
+            .SelectMany(pair => pair.Value);
+        
+        foreach (var message in unprocessedPendingMessages)
+        {
+            message.PartitionId = trashPartitionId.Value;
+            logger.LogInformation($"Unprocessed message {message.Id} moved to trash topic.");
+        }
         await context.SaveChangesAsync();
     }
 }

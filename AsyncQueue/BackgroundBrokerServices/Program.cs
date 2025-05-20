@@ -16,6 +16,23 @@ builder.Services.AddSingleton<ConsumerHealthCheckJob>();
 builder.Services.AddSingleton<UnprocessedMessagesHandleJob>();
 builder.Services.AddSingleton<IHealthCheckService, HealthCheckService>();
 
+builder.Services.AddHttpClient("consumer-bot", client =>
+{
+    client.BaseAddress = new Uri("http://consumer-bot:8080/");
+    client.Timeout = TimeSpan.FromSeconds(3);
+});
+
+builder.Services.AddHttpClient("consumer-console", client =>
+{
+    client.BaseAddress = new Uri("http://consumer-console:8080/");
+    client.Timeout = TimeSpan.FromSeconds(3);
+});
+builder.Services.AddHttpClient("consumer-db", client =>
+{
+    client.BaseAddress = new Uri("http://consumer-db:8080/");
+    client.Timeout = TimeSpan.FromSeconds(3);
+});
+
 builder.Services.AddHangfire(configuration => 
     configuration.UsePostgreSqlStorage(options => 
         options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("Hangfire"))));
@@ -43,7 +60,6 @@ public class MyAuthorizationFilter : IDashboardAuthorizationFilter
 {
     public bool Authorize(DashboardContext context)
     {
-        // Разрешаем все запросы
         return true;
     }
 }

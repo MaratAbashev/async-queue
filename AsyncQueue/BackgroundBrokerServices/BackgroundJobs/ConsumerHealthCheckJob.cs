@@ -1,6 +1,7 @@
 using Domain.Abstractions.Services;
 using Domain.Entities;
 using Infrastructure.DataBase;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackgroundBrokerServices.BackgroundJobs;
 
@@ -14,9 +15,10 @@ public class ConsumerHealthCheckJob(
     {
         using var scope = serviceScopeFactory.CreateScope();
         context = scope.ServiceProvider.GetService<BrokerDbContext>()!;
-        var consumersUrls = context.Consumers
+        var consumersUrls = await context.Consumers
             .Select(c => c.Address)
-            .Distinct();
+            .Distinct()
+            .ToListAsync();
         
         foreach (var consumerUrl in consumersUrls)
         {
@@ -25,6 +27,8 @@ public class ConsumerHealthCheckJob(
                 var isHealthy = await healthCheckService.CheckConsumerHealthAsync(consumerUrl);
                 
                 var currentConsumers = context.Consumers
+                    .Include(c => c.Partitions)!
+                    .ThenInclude(p => p.Consumers)
                     .Where(c => c.Address == consumerUrl && !c.IsDeleted);
                 
                 if (!isHealthy)
@@ -53,7 +57,31 @@ public class ConsumerHealthCheckJob(
         foreach (var consumer in consumers)
         {
             consumer.IsDeleted = true;
-            consumer.Partitions?.Clear();
+            //consumer.Partitions?.Clear();
+            foreach (var partition in consumer.Partitions)
+            {
+                if (partition.Consumers?.Contains(consumer) ?? false)
+                {
+                    partition.Consumers.Remove(consumer);
+                }
+
+                if (partition.Consumers?.Count == 0)
+                {
+                    var newConsumer = context.Consumers
+                        .Where(c => !c.IsDeleted && c.ConsumerGroupId == consumer.ConsumerGroupId)
+                        .Include(consumer => consumer.Partitions)
+                        .AsEnumerable()
+                        .MinBy(c =>
+                        {
+                            if (c.Partitions != null) return c.Partitions.Count;
+                            return 0;
+                        });
+                    if (newConsumer != null)
+                    {
+                        if (newConsumer.Partitions != null) newConsumer.Partitions.Add(partition);
+                    }
+                }
+            }
         }
         await context.SaveChangesAsync();
     }

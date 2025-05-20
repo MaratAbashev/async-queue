@@ -42,4 +42,5 @@ catch (Exception ex)
     logger.LogError(ex, ex.Message);
 }
 
+app.MapGet("/health-check", () => true);
 app.Run();

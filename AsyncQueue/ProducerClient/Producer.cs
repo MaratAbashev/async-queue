@@ -26,7 +26,7 @@ internal class Producer<TKey, TValue>: IProducer<TKey, TValue>, IDisposable
 
     public async Task RegisterAsync(CancellationToken cancellationToken = default)
     {
-        await Task.Delay(5000, cancellationToken);
+        await Task.Delay(10000, cancellationToken);
         if (_isRegistered)
         {
             throw new InvalidOperationException("Already registered");

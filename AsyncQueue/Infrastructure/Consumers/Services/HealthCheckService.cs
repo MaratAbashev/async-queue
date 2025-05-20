@@ -3,19 +3,19 @@ using Domain.Abstractions.Services;
 
 namespace Infrastructure.Consumers.Services;
 
-public class HealthCheckService: IHealthCheckService
+public class HealthCheckService(IHttpClientFactory factory): IHealthCheckService
 {
-    public async Task<bool> CheckConsumerHealthAsync(string? healthCheckUrl)
+    public async Task<bool> CheckConsumerHealthAsync(string? hostName)
     {
-        if (string.IsNullOrEmpty(healthCheckUrl))
+        if (string.IsNullOrEmpty(hostName))
         {
             return false;
         }
         try
         {
-            using var ping = new Ping();
-            var reply = await ping.SendPingAsync(healthCheckUrl);
-            return reply.Status == IPStatus.Success;
+            var client = factory.CreateClient(hostName);
+            var response = await client.GetAsync("/health-check");
+            return response.IsSuccessStatusCode;
         }
         catch
         {
