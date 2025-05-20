@@ -13,14 +13,16 @@ public class ConsumerClient<T>: IConsumerClient<T>
     private readonly HttpClient _client;
     private Guid _consumerId;
     private bool _isRegistered;
-    private int _batchSize;
+    private readonly int _batchSize;
+    private readonly string? _address;
     public string ConsumerGroup { get; }
-    public ConsumerClient(string consumerGroup, string brokerUrl, int batchSize)
+    public ConsumerClient(string consumerGroup, string brokerUrl, int batchSize, string? address)
     {
         ConsumerGroup = consumerGroup;
         _client = new HttpClient();
         _client.BaseAddress = new Uri(brokerUrl);
         _batchSize = batchSize;
+        _address = address;
     }
 
     public async Task Register(CancellationToken cancellationToken = default)
@@ -28,7 +30,8 @@ public class ConsumerClient<T>: IConsumerClient<T>
         EnsureRegistered();
         var registerRequest = new ConsumerRegisterRequest
         {
-            ConsumerGroup = ConsumerGroup
+            ConsumerGroup = ConsumerGroup,
+            Address = _address
         };
         while (!cancellationToken.IsCancellationRequested)
         {

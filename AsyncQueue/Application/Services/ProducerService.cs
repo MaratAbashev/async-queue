@@ -3,6 +3,8 @@ using Domain.Abstractions.Services;
 using Domain.Entities;
 using Domain.Models;
 using Domain.Models.ProducersDtos;
+using Infrastructure.DataBase;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
@@ -13,6 +15,7 @@ public class ProducerService(
     ITopicRepository topicRepository,
     IConsumerGroupRepository consumerGroupRepository,
     IConsumerGroupMessageStatusRepository consumerGroupMessageStatusRepository,
+    BrokerDbContext context,
     ILogger<ProducerService> logger): IProducerService
 {
     public async Task<ProducerRegistrationResponse> RegisterAsync(ProducerRegistrationRequest registerRequest, CancellationToken cancellationToken = default)
@@ -95,6 +98,7 @@ public class ProducerService(
         var message = sendRequest.Message;
         var messageId = Guid.NewGuid();
         var partition = GetPartitionByMessage(message.Key, groupMessagesByPartitionId);
+
         await messageRepository.AddAsync(new Message
         {
             Id = messageId,
@@ -106,8 +110,11 @@ public class ProducerService(
             CreatedAt = DateTime.UtcNow,
         });
 
-        var consumerGroups = await consumerGroupRepository
-            .GetAllByFilterAsync(cg => true);
+        var consumerGroups = await context.ConsumerGroups
+            .AsNoTracking()
+            .Include(cg => cg.Topic)
+            .Where(cg => cg.Topic.TopicName == sendRequest.Topic)
+            .ToListAsync(cancellationToken: cancellationToken);
 
         foreach (var consumerGroup in consumerGroups)
         {
