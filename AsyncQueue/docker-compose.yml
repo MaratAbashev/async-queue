@@ -16,7 +16,7 @@
     depends_on:
       - db-hangfire
       - broker-api
-      
+  
   broker-api:
     image: broker-api
     build:
@@ -33,6 +33,7 @@
       POSTGRES_DB: ${POSTGRES_DB_API}
     depends_on:
       - db-broker-api
+      - kibana
 
   db-broker-api:
     image: postgres:latest
@@ -57,7 +58,7 @@
       POSTGRES_USER: ${POSTGRES_USER_CONSUMER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_CONSUMER}
       POSTGRES_DB: ${POSTGRES_DB_CONSUMER}
-      
+  
   db-hangfire:
     image: postgres:latest
     container_name: db-hangfire
@@ -79,7 +80,7 @@
       - .env
     depends_on:
       - broker-api
-      
+  
   consumer-db:
     image: consumer-db
     build:
@@ -97,7 +98,7 @@
     depends_on:
       - db-consumer
       - broker-api
-      
+  
   consumer-console:
     image: consumer-console
     build:
@@ -109,7 +110,7 @@
       - .env
     depends_on:
       - broker-api
-      
+  
   consumer-bot:
     image: consumer-bot
     build:
@@ -121,3 +122,27 @@
       - .env
     depends_on:
       - broker-api
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
+    depends_on:
+      - elasticsearch
+
+volumes:
+  esdata:

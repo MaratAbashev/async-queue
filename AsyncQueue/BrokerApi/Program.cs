@@ -1,19 +1,37 @@
 using Application.Services;
 using Domain.Abstractions.Repositories;
 using Domain.Abstractions.Services;
-using Domain.Entities;
 using Domain.Models.ConsumersDtos;
 using Domain.Models.ProducersDtos;
 using Infrastructure.DataBase;
 using Infrastructure.DataBase.Options;
 using Infrastructure.DataBase.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.Elasticsearch;
 using IConsumerService = Domain.Abstractions.Services.IConsumerService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+
+var logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+    .MinimumLevel.Override("System", LogEventLevel.Error)
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Error)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "broker-api")
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(builder.Configuration["ELASTICSEARCH_HOSTS"]!))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = "broker-api-logs-{0:yyyy.MM.dd}",
+    })
+    .CreateLogger();
+
+Log.Logger = logger;
+
 builder.Services.Configure<BrokerStartingData>(builder.Configuration.GetSection(nameof(BrokerStartingData)));
 
 builder.Services.AddDbContext<BrokerDbContext>();
@@ -35,6 +53,13 @@ builder.Services.AddHostedService<DbInitializerService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Logging
+    .ClearProviders()
+    .AddFilter("Microsoft", LogLevel.Error)
+    .AddFilter("System", LogLevel.Error)
+    .AddFilter("Microsoft.AspNetCore", LogLevel.Error);
+builder.Host.UseSerilog(logger, dispose: true);
+
 var app = builder.Build();
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
@@ -44,6 +69,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json",
         $"{builder.Environment.ApplicationName} v1"));
 }
+
+app.UseSerilogRequestLogging(opt =>
+{
+    opt.GetLevel = (httpContext, _, ex) =>
+    {
+        if (ex != null || httpContext.Response.StatusCode >= 500)
+            return LogEventLevel.Error;
+
+        return LogEventLevel.Verbose;
+    };
+});
 
 var producerGroup = app.MapGroup("/producer");
 

@@ -5,13 +5,15 @@ using Domain.Models;
 using Domain.Models.ConsumersDtos;
 using Infrastructure.DataBase;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
 public class ConsumerService(BrokerDbContext context, IConsumerRepository consumerRepository,
     IConsumerGroupRepository consumerGroupRepository,
     IConsumerGroupOffsetRepository consumerGroupOffsetRepository,
-    IConsumerGroupMessageStatusRepository consumerGroupMessageStatusRepository) : IConsumerService
+    IConsumerGroupMessageStatusRepository consumerGroupMessageStatusRepository,
+    ILogger<ConsumerService> logger) : IConsumerService
 {
     public async Task<ConsumerRegisterResponse> RegisterConsumerAsync(ConsumerRegisterRequest consumerRegisterRequest)
     {
@@ -19,6 +21,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
             cg.ConsumerGroupName == consumerRegisterRequest.ConsumerGroup);
         if (consumerGroup == null)
         {
+            logger.LogInformation($"ConsumerGroup {consumerRegisterRequest.ConsumerGroup} not found");
             return new ConsumerRegisterResponse
             {
                 ConsumerId = Guid.Empty,
@@ -74,6 +77,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
 
             if (freePartition == null)
             {
+                logger.LogInformation($"No free partition found for consumer {consumer.Id} in group {consumerGroup.ConsumerGroupName}");
                 return new ConsumerRegisterResponse
                 {
                     ConsumerId = consumer.Id,
@@ -90,7 +94,9 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
             }
             freePartition.Consumers?.Add(consumer);
             await context.SaveChangesAsync();
-            
+            logger.LogInformation($"Consumer {consumer.Id} " +
+                                  $"added to group {consumerGroup.ConsumerGroupName} " +
+                                  $"to partition {freePartition.Id}");
             return new ConsumerRegisterResponse
             {
                 ConsumerId = consumer.Id,
@@ -99,7 +105,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            logger.LogError(e, e.Message);
             return new ConsumerRegisterResponse
             {
                 ConsumerId = Guid.Empty,
@@ -130,9 +136,10 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
 
             if (!consumerPartitions.Any())
             {
+                logger.LogError($"No partition found for consumer {consumerId} in group {consumerGroupId}");
                 return new ConsumerPollResponse
                 {
-                    Message = $"No partition found with id {consumerId}",
+                    Message = $"No partition found for consumer {consumerId}",
                     ProcessingStatus = ProcessingStatus.Wrong
                 };
             }
@@ -172,15 +179,16 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                             c.PartitionId == partition.Id);
             
             var newOffset = validMessages.FirstOrDefault()?.PartitionNumber ?? currentOffset.Offset;
-
+            var consumerMessages = validMessages
+                .Select(m => new ConsumerMessage
+                {
+                    ValueJson = m.ValueJson
+                })
+                .ToList();
+            logger.LogInformation($"Consumer {consumerId} received messages to process", consumerMessages);
             return new ConsumerPollResponse
             {
-                ConsumerMessages = validMessages
-                    .Select(m => new ConsumerMessage
-                    {
-                        ValueJson = m.ValueJson
-                    })
-                    .ToList(),
+                ConsumerMessages = consumerMessages,
                 Offset = newOffset,
                 ProcessingStatus = ProcessingStatus.Success,
                 ValueType = validMessages.FirstOrDefault()?.ValueType,
@@ -189,6 +197,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
         }
         catch (Exception e)
         {
+            logger.LogError(e, e.Message);
             return new ConsumerPollResponse
             {
                 ProcessingStatus = ProcessingStatus.Wrong,
@@ -203,6 +212,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
         {
             if (consumerCommitRequest.SuccessProcessedMessagesCount > consumerCommitRequest.BatchSize)
             {
+                logger.LogInformation($"Consumer {consumerId} haven't committed messages");
                 return false;
             }
             var consumerGroupId = (await context.Consumers
@@ -242,11 +252,12 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                 currentConsumerGroupOffset.Offset = consumerCommitRequest.Offset + consumerCommitRequest.BatchSize;
             }
             await context.SaveChangesAsync();
+            logger.LogInformation($"Consumer {consumerId} successfully committed {consumerCommitRequest.SuccessProcessedMessagesCount} messages");
             return true;
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            logger.LogError(e, e.Message);
             return false;
         }
     }
