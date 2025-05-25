@@ -185,7 +185,7 @@ public class ConsumerService(BrokerDbContext context, IConsumerRepository consum
                     ValueJson = m.ValueJson
                 })
                 .ToList();
-            logger.LogInformation($"Consumer {consumerId} received messages to process", consumerMessages);
+            logger.LogInformation($"Consumer {consumerId} received {consumerMessages.Count} messages to process", consumerMessages);
             return new ConsumerPollResponse
             {
                 ConsumerMessages = consumerMessages,

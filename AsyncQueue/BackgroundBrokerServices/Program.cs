@@ -5,10 +5,30 @@ using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using Infrastructure.Consumers.Services;
 using Infrastructure.DataBase;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.Elasticsearch;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+var logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+    .MinimumLevel.Override("System", LogEventLevel.Error)
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Error)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "broker-api")
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(builder.Configuration["ELASTICSEARCH_HOSTS"]!))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = "broker-api-logs-{0:yyyy.MM.dd}",
+    })
+    .CreateLogger();
+
+Log.Logger = logger;
+
 
 builder.Services.AddDbContext<BrokerDbContext>();
 
@@ -37,6 +57,13 @@ builder.Services.AddHangfire(configuration =>
     configuration.UsePostgreSqlStorage(options => 
         options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("Hangfire"))));
 
+builder.Logging
+    .ClearProviders()
+    .AddFilter("Microsoft", LogLevel.Error)
+    .AddFilter("System", LogLevel.Error)
+    .AddFilter("Microsoft.AspNetCore", LogLevel.Error);
+builder.Host.UseSerilog(logger, dispose: true);
+
 builder.Services.AddHangfireServer();
 
 var app = builder.Build();
@@ -44,6 +71,17 @@ var app = builder.Build();
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = new[] { new MyAuthorizationFilter() }
+});
+
+app.UseSerilogRequestLogging(opt =>
+{
+    opt.GetLevel = (httpContext, _, ex) =>
+    {
+        if (ex != null || httpContext.Response.StatusCode >= 500)
+            return LogEventLevel.Error;
+
+        return LogEventLevel.Verbose;
+    };
 });
 
 RecurringJob.AddOrUpdate("consumer-health-check",
